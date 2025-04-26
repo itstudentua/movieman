@@ -1,0 +1,110 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model User {
+    id             String   @id @default(cuid())
+    name           String?
+    surname        String?
+    login          String   @unique
+    passwordHash   String
+    email          String?  @unique
+    image          String?
+    //emailVerified  DateTime?
+    sessions       Session[]
+    accounts       Account[]
+    
+    userMedia      UserMedia[]  // обратная связь
+    userList          UserList[]
+
+}
+
+model Account {
+    id                String  @id @default(cuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    access_token      String?
+    refresh_token     String?
+    expires_at        Int?
+    id_token          String?
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@unique([provider, providerAccountId])
+}
+
+model Session {
+    id           String   @id @default(cuid())
+    userId       String
+    sessionToken String   @unique
+    expires      DateTime
+
+    user User @relation(fields: [userId], references: [id])
+}
+
+
+// модель для токенов верификации
+
+// model VerificationToken {
+//     identifier String
+//     token      String   @unique
+//     expires    DateTime
+
+//     @@unique([identifier, token])
+// }
+
+
+model UserMedia {
+    id           Int      @id @default(autoincrement())
+    userId       String
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    mediaId      Int
+    type         String   // "movie" или "tv"
+    title        String
+    poster       String?
+    rating       Float?
+    userRating     Float?
+    userComment String?
+    year         Int?
+    description  String?
+    watchedDate  DateTime?
+
+    isWatched    Boolean   @default(false)
+    isFavorite   Boolean   @default(false)
+    isWishlist   Boolean   @default(false)
+
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+}
+
+model UserListItem {
+    id        String   @id @default(uuid())
+    listId    String
+    mediaId   Int
+    type      String   // movie/tv
+    title     String
+    poster    String?
+    year      Int?
+
+    list      UserList @relation(fields: [listId], references: [id])
+}
+
+
+model UserList {
+    id        String      @id @default(uuid())
+    userId    String
+    name      String      // Название списка
+    createdAt DateTime    @default(now())
+
+    user      User        @relation(fields: [userId], references: [id])
+    items     UserListItem[]
+}
+
