@@ -17,6 +17,8 @@ import { MobileMenu } from './MobileMenu';
 import { useState } from 'react';
 import { Search, X} from 'lucide-react' // иконка лупы
 import { useTransition } from 'react'
+import { usePathname } from 'next/navigation'
+
 
 
 
@@ -26,6 +28,8 @@ export default function Header() {
 	const [showMobileInputSearch, setShowMobileInputSearch] = useState(false)
 	const [mobileMenu, setMobileMenu] = useState(false) // for disable search input and mobile search icon when menu is open
 	const [inputValue, setInputValue] = useState('')
+
+	const pathname = usePathname()
 
     return (
 		<header className='w-full dark:bg-black bg-white border-b sticky top-0 z-50'>
@@ -105,26 +109,16 @@ export default function Header() {
 										>
 											Profile
 										</DropdownMenuItem>
-										<DropdownMenuItem
-											className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer'
-											onClick={() => alert('Настройки')}
-										>
-											Watchlist
+
+										<DropdownMenuItem asChild>
+											<Link
+												href='/library'
+												className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer w-full'
+											>
+												My library
+											</Link>
 										</DropdownMenuItem>
-										<DropdownMenuItem
-											className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer'
-											onClick={() => alert('lists')}
-										>
-											Your lists
-										</DropdownMenuItem>
-										<DropdownMenuItem
-											className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer'
-											onClick={() =>
-												alert('watch history')
-											}
-										>
-											Watch history
-										</DropdownMenuItem>
+
 										<DropdownMenuItem
 											className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer'
 											onClick={() => signOut()}
@@ -134,7 +128,11 @@ export default function Header() {
 									</DropdownMenuContent>
 								</DropdownMenu>
 							) : (
-								<Link href='/login/signin'>
+								<Link
+									href={`/login/signin?callbackUrl=${encodeURIComponent(
+										pathname
+									)}`}
+								>
 									<button className='mobile-signin grow hover:opacity-70 font-semibold cursor-pointer bg-black text-white dark:bg-white dark:text-black rounded-sm py-1 px-2'>
 										Sign in
 									</button>

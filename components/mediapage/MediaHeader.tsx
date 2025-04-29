@@ -1,12 +1,7 @@
 'use client'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Plus, Heart, Bookmark, Eye } from 'lucide-react'
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipTrigger,
-} from '@/components/ui/tooltip'
+
 import { useEffect, useState, useRef } from 'react'
 import { CalendarIcon, EditIcon } from 'lucide-react'
 
@@ -26,13 +21,7 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from '@/components/ui/select'
-
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import ListMenuBlock from '../general/ListMenuBlock'
 
 type MediaProps = {
 	media: any
@@ -144,6 +133,13 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 									)
 								</span>
 							</h1>
+							{media?.media_type === 'movie' &&
+								media?.release_date.split('-')[0] && (
+									<p className='text-gray-400'>
+										{media?.release_date.split('-')[0] ||
+											''}
+									</p>
+								)}
 							<p className='text-gray-500'>
 								{media?.genres
 									?.map(
@@ -167,10 +163,11 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 								{media?.origin_country
 									.map((item: any) => item)
 									.join(', ')}
-								{media?.media_type === 'tv' ?
-								media?.number_of_seasons.length === 1
-									? `, ${media?.number_of_seasons} season, ${media?.number_of_episodes} episodes`
-									: `, ${media?.number_of_seasons} seasons, ${media?.number_of_episodes} episodes` : null}
+								{media?.media_type === 'tv'
+									? media?.number_of_seasons.length === 1
+										? `, ${media?.number_of_seasons} season, ${media?.number_of_episodes} episodes`
+										: `, ${media?.number_of_seasons} seasons, ${media?.number_of_episodes} episodes`
+									: null}
 							</p>
 							<p>
 								Global Rating: {media?.vote_average.toFixed(1)}
@@ -250,7 +247,7 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 							</p>
 
 							{session?.user && (
-								<ListBlock
+								<ListMenuBlock
 									isWatched={isWatched}
 									isFavorite={isFavorite}
 									isWishlist={isWishlist}
@@ -271,115 +268,6 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 	)
 }
 
-type ListBlockProps = {
-	isWatched: boolean
-	setIsWatched: React.Dispatch<React.SetStateAction<boolean>>
-	isFavorite: boolean
-	setIsFavorite: React.Dispatch<React.SetStateAction<boolean>>
-	isWishlist: boolean
-	setIsWishlist: React.Dispatch<React.SetStateAction<boolean>>
-}
-
-function ListBlock({
-	isWatched,
-	setIsWatched,
-	isFavorite,
-	setIsFavorite,
-	isWishlist,
-	setIsWishlist,
-}: ListBlockProps) {
-	return (
-		<div className='flex gap-4 mt-3'>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Button
-						//className='hover:opacity-70 cursor-pointer'
-						variant={isWatched ? 'active' : 'myStyle'}
-						size='icon'
-						onClick={() => {
-							setIsWatched(prev => !prev)
-						}}
-					>
-						<Eye className='w-5 h-5' />
-					</Button>
-				</TooltipTrigger>
-				<TooltipContent>
-					{isWatched ? 'Watched' : 'Unwatched'}
-				</TooltipContent>
-			</Tooltip>
-			<DropdownMenu>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<DropdownMenuTrigger asChild>
-							<Button variant='myStyle' size='icon'>
-								<Plus className='w-5 h-5' />
-							</Button>
-						</DropdownMenuTrigger>
-					</TooltipTrigger>
-					<TooltipContent>Add to List</TooltipContent>
-				</Tooltip>
-
-				<DropdownMenuContent
-					align='end'
-					className='bg-white dark:bg-black truncate'
-				>
-					<DropdownMenuItem
-						className='text-sm font-semibold sm:font-normal cursor-pointer'
-						onClick={() => {
-							setIsWishlist(prev => !prev)
-						}}
-					>
-						{isWishlist ? '✅' : ''} Watch later
-					</DropdownMenuItem>
-					<DropdownMenuItem
-						className='text-sm font-semibold sm:font-normal cursor-pointer'
-						onClick={() => alert('Настройки')}
-					>
-						Some item
-					</DropdownMenuItem>
-					<Button className='mt-3 cursor-pointer'>
-						Create new list
-					</Button>
-				</DropdownMenuContent>
-			</DropdownMenu>
-
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Button
-						title='Mark as Favourite'
-						variant={isFavorite ? 'active' : 'myStyle'}
-						size='icon'
-						onClick={() => {
-							setIsFavorite(prev => !prev)
-						}}
-					>
-						<Heart className='w-5 h-5' />
-					</Button>
-				</TooltipTrigger>
-				<TooltipContent>
-					{isFavorite ? 'Favourite' : 'Mark as Favourite'}
-				</TooltipContent>
-			</Tooltip>
-			<Tooltip>
-				<TooltipTrigger asChild>
-					<Button
-						title='Add to Watchlist'
-						variant={isWishlist ? 'active' : 'myStyle'}
-						size='icon'
-						onClick={() => {
-							setIsWishlist(prev => !prev)
-						}}
-					>
-						<Bookmark className='w-5 h-5' />
-					</Button>
-				</TooltipTrigger>
-				<TooltipContent>
-					{isWishlist ? 'In wishlist' : 'Add to Watchlist'}
-				</TooltipContent>
-			</Tooltip>
-		</div>
-	)
-}
 
 function OverViewSection({ media }: { media: any }) {
 	return (

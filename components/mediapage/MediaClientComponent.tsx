@@ -81,7 +81,7 @@ export default function ShowClientComponent({
 					isFavorite: isFavorite,
 					isWishlist: isWishlist,
 
-					watchedDate: date, // можешь убрать или сделать по выбору
+					watchedDate: date, 
 				}),
 			})
 			setTimeout(() => {
@@ -90,9 +90,14 @@ export default function ShowClientComponent({
 		}
 	}
 
-	console.log(media);
-	
 
+	if (!session?.user?.id) {
+		setTimeout(() => {
+			setIsLoading(false)
+		}, 300)
+	}
+
+	
 	const mediaProps = {
 		date,
 		setDate,
@@ -122,13 +127,16 @@ export default function ShowClientComponent({
 				<MediaHeader mediaProps={mediaProps} />
 
 				<div className='px-3 sm:px-10 max-w-7xl mx-auto mt-5 pb-10'>
-					
-					<MediaCast cast={media?.credits?.cast} mediaType={media.media_type}/>
+					<MediaCast
+						cast={media?.credits?.cast}
+						mediaType={media.media_type}
+					/>
 
 					<MediaCommentary
 						userComment={userComment}
 						setUserComment={setUserComment}
 						handleClick={handleClick}
+						isWatched={isWatched}
 					/>
 
 					<MediaRecommendation

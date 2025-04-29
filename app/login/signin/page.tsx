@@ -3,6 +3,8 @@
 import { signIn, signOut, useSession } from 'next-auth/react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
+
 
 export default function HomePage() {
     const { data: session, status } = useSession() // status для отслеживания загрузки сессии
@@ -14,6 +16,9 @@ export default function HomePage() {
         password: '',
     })
     const router = useRouter()
+
+    const searchParams = useSearchParams()
+	const callbackUrl = searchParams.get('callbackUrl') || '/'
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -36,10 +41,11 @@ export default function HomePage() {
         }
 
         const result = await signIn('credentials', {
-            login: form.login,
-            password: form.password,
-            redirect: false,
-        })
+			login: form.login,
+			password: form.password,
+			redirect: true,
+			callbackUrl,
+		})
 
         if (!result?.error) {
             router.refresh()
@@ -51,14 +57,17 @@ export default function HomePage() {
     const handleSignOut = async () => {
         await signOut({ 
             redirect: true,
-            callbackUrl: '/',
+            callbackUrl,
         })
         //router.refresh()
     }
 
     const handleGoogleSignIn = () => {
-        signIn('google', { redirect: true, callbackUrl: '/' }) // Редирект на главную страницу
-    }
+		const searchParams = new URLSearchParams(window.location.search)
+		const callbackUrl = searchParams.get('callbackUrl') || '/'
+
+		signIn('google', { redirect: true, callbackUrl })
+	}
 
 
     if (status === 'loading') {
