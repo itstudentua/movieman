@@ -67,7 +67,7 @@ export default function MediaRecommendation({
 										</div>
 									)}
 								</div>
-								<div className='p-2 flex flex-col border'>
+								<div className='p-2 flex flex-col border-l border-b border-r'>
 									<p className='font-semibold text-md truncate'>
 										{title}
 									</p>
@@ -75,7 +75,7 @@ export default function MediaRecommendation({
 										Year: {year || 'Unknown'}
 									</p>
 									<p className='text-xs'>
-										Rating: {rec.vote_average.toFixed(1)}
+										Rating: {rec.vote_average.toFixed(1)} ⭐️
 									</p>
 								</div>
 							</Link>

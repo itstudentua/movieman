@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/ui/ThemeProvider'
 import { Inter } from 'next/font/google'
 import SessionWrapper from '@/components/general/SessionWrapper'
 import Header from '@/components/general/Header'
+import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -32,6 +33,11 @@ export default function RootLayout({
 								MovieMan {new Date().getFullYear()}
 							</footer>
 						</div>
+						<Toaster
+							duration={1500}
+							closeButton
+							position='top-center'
+						/>
 					</SessionWrapper>
 				</ThemeProvider>
 			</body>

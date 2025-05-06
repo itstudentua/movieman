@@ -28,13 +28,14 @@ export default function Header() {
 	const [showMobileInputSearch, setShowMobileInputSearch] = useState(false)
 	const [mobileMenu, setMobileMenu] = useState(false) // for disable search input and mobile search icon when menu is open
 	const [inputValue, setInputValue] = useState('')
+	const [isOpen, setIsOpen] = useState(false) // mobile menu
 
 	const pathname = usePathname()
 
     return (
 		<header className='w-full dark:bg-black bg-white border-b sticky top-0 z-50'>
 			<div className='mobile-header flex justify-between items-center gap-1 sm:gap-5 max-w-7xl py-3 sm:px-10 px-5 m-auto'>
-				<Link onClick={() => setInputValue('')} href='/'>
+				<Link onClick={() => {setInputValue(''); setIsOpen(false)}} href='/'>
 					<h1 className='mobile-logo text-2xl font-semibold cursor-pointer select-none group rounded-sm hover:opacity-70 transition-all duration-300'>
 						Movie
 						<span className='font-bold px-1 dark:bg-white dark:text-black bg-black text-white rounded-sm transition-colors duration-300 dark:group-hover:bg-black dark:group-hover:text-white group-hover:bg-white group-hover:text-black'>
@@ -77,6 +78,8 @@ export default function Header() {
 							<MobileMenu
 								toggle={() => setMobileMenu(prev => !prev)}
 								clearInput={() => setInputValue('')}
+								isOpen={isOpen}
+								setIsOpen={setIsOpen}
 							/>
 
 							<ThemeToggle />
@@ -114,6 +117,7 @@ export default function Header() {
 											<Link
 												href='/library'
 												className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer w-full'
+												onClick={() => setIsOpen(false)}
 											>
 												My library
 											</Link>
@@ -133,7 +137,9 @@ export default function Header() {
 										pathname
 									)}`}
 								>
-									<button className='mobile-signin grow hover:opacity-70 font-semibold cursor-pointer bg-black text-white dark:bg-white dark:text-black rounded-sm py-1 px-2'>
+									<button 
+									onClick={() => setIsOpen(false)}
+									className='mobile-signin grow hover:opacity-70 font-semibold cursor-pointer bg-black text-white dark:bg-white dark:text-black rounded-sm py-1 px-2'>
 										Sign in
 									</button>
 								</Link>

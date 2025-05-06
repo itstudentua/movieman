@@ -18,7 +18,7 @@ export default function ShowCommentary({
 }) {
 	const { data: session } = useSession()
 
-	const [text, setText] = useState(userComment || '')
+	const [text, setText] = useState(userComment || '69proverka')
 	const [edit, setEdit] = useState(false)
 
 	const handleSave = () => {
@@ -27,7 +27,7 @@ export default function ShowCommentary({
 	}
 
 	useEffect(() => {
-		if (userComment === text) {
+		if (userComment === text && text !== '69proverka') {
 			handleClick()
 		} else {
 			setText(userComment || '')

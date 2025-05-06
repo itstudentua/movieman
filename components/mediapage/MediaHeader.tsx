@@ -56,15 +56,16 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 		handleClick,
 	} = mediaProps
 
-	const renderCount = useRef(0)
+	const [isRefresh, setIsRefresh] = useState(false)
 
 	useEffect(() => {
-		if (renderCount.current > 0) {
+		// alert(isRefresh)
+		if(isRefresh) {
 			handleClick()
 		}
-		renderCount.current += 1
 	}, [isWatched, isFavorite, isWishlist, userRating, date])
 
+	
 	const [imagePath, setImagePath] = useState<string>('') // Храним путь к изображению
 
 	useEffect(() => {
@@ -94,9 +95,11 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 		const minutes = media.runtime || 0
 		const hours = Math.floor(minutes / 60)
 		const mins = minutes % 60
-		return `${hours}h ${mins}m`
+		const finalRes = `${hours ? `${hours}h ` : ''}${
+			mins ? `${mins}m` : ''
+		}`.trim()
+		return finalRes ? `(${finalRes})` : ""
 	}
-	
 
 	return (
 		<div
@@ -123,24 +126,20 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 							</div>
 						)}
 						<div className='flex flex-col pt-3 w-full text-black dark:text-white'>
-							<h1 className='text-3xl font-bold'>
+							<h1 className='text-3xl font-bold leading-none'>
 								{media.name || media.title}{' '}
-								<span className='text-lg text-gray-900 dark:text-gray-500 font-normal'>
-									(
-									{media?.media_type === 'tv'
-										? getYears()
-										: getRuntime()}
-									)
+								<span className=' text-lg text-gray-900 dark:text-gray-500 font-normal whitespace-nowrap'>
+									{media?.media_type === 'movie' &&
+										getRuntime()}
 								</span>
 							</h1>
-							{media?.media_type === 'movie' &&
-								media?.release_date.split('-')[0] && (
-									<p className='text-gray-400'>
-										{media?.release_date.split('-')[0] ||
-											''}
-									</p>
-								)}
-							<p className='text-gray-500'>
+
+							<p className='text-lg text-gray-700 dark:text-gray-400'>
+								{media?.media_type === 'tv'
+									? getYears()
+									: media?.release_date.split('-')[0] || ''}
+							</p>
+							<p className='text-lg text-gray-900 dark:text-gray-500'>
 								{media?.genres
 									?.map(
 										(genre: { name: string }) => genre.name
@@ -170,7 +169,8 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 									: null}
 							</p>
 							<p>
-								Global Rating: {media?.vote_average.toFixed(1)}
+								Global Rating: {media?.vote_average.toFixed(1)}{' '}
+								⭐️
 							</p>
 							{session?.user && isWatched && (
 								<div className='mt-2 flex flex-col bg-white/80 text-black w-fit rounded-lg p-2'>
@@ -180,9 +180,10 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 											{userRating && `${userRating} ⭐️`}
 										</label>
 										<Select
-											onValueChange={value =>
+											onValueChange={value => {
+												setIsRefresh(true)
 												setUserRating(Number(value))
-											}
+											}}
 										>
 											<SelectTrigger className='dark:!text-black w-fit bg-black !text-white !p-1 !h-fit cursor-pointer dark:bg-white/50 font-medium '>
 												{!userRating ||
@@ -234,7 +235,10 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 												<Calendar
 													mode='single'
 													selected={date}
-													onSelect={setDate}
+													onSelect={date => {
+														setDate(date)
+														setIsRefresh(true)
+													}}
 													initialFocus
 												/>
 											</PopoverContent>
@@ -242,12 +246,21 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 									</div>
 								</div>
 							)}
-							<p className='italic text-gray-400 mt-2'>
+							<p className='italic text-gray-700 dark:text-gray-400 mt-2'>
 								{media?.tagline}
 							</p>
 
 							{session?.user && (
 								<ListMenuBlock
+									mediaId={media.id}
+									setIsRefresh={setIsRefresh}
+									watchedButton={
+										new Date(
+											media.release_date ||
+												media.first_air_date
+										).getTime() < Date.now()
+									}
+									addUserMedia={handleClick}
 									isWatched={isWatched}
 									isFavorite={isFavorite}
 									isWishlist={isWishlist}

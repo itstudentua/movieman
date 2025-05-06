@@ -17,8 +17,9 @@ import axios from 'axios'
 // 	}
 // }
 
+const API_KEY = process.env.TMDB_API_KEY
+
 export const getMovie = async (id: string) => {
-	const API_KEY = process.env.TMDB_API_KEY
 
 	try {
 		// Запрос данных о фильме
@@ -45,7 +46,6 @@ export const getMovie = async (id: string) => {
 
 
 export const getShow = async (id: string) => {
-	const API_KEY = process.env.TMDB_API_KEY
 
 	try {
 		// Запрос данных о сериале
@@ -84,7 +84,6 @@ export const getShow = async (id: string) => {
 
 
 export const getPerson = async (id: string) => {
-	const API_KEY = process.env.TMDB_API_KEY
 	const BASE_URL = 'https://api.themoviedb.org/3/person'
 
 	try {
@@ -121,4 +120,30 @@ export const getPerson = async (id: string) => {
 		console.error('Error fetching person with credits:', error)
 		return null
 	}
+}
+
+
+// lib/tmdb.ts
+
+const ENDPOINTS: Record<string, string> = {
+	top_rated: '/movie/top_rated',
+	upcoming: '/movie/upcoming',
+	trending: '/trending/movie/week',
+}
+
+export async function getPopularMovies(
+	type: 'top_rated' | 'upcoming' | 'trending'
+) {
+	const BASE_URL = 'https://api.themoviedb.org/3'
+	const endpoint = ENDPOINTS[type]
+	const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}`
+
+	const res = await fetch(url, { cache: 'no-store' })
+	if (!res.ok) throw new Error('Ошибка при загрузке фильмов')
+	const data = await res.json()
+	if (endpoint === '/movie/upcoming') 	return data.results.filter(
+		(movie: any) => new Date(movie.release_date).getTime() > Date.now()
+	)
+	return data.results
+
 }

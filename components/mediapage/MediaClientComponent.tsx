@@ -15,7 +15,6 @@ export default function ShowClientComponent({
 	session: Session | null
 }) {
 	const [date, setDate] = useState<Date | undefined>()
-	const [mediaInfo, setMediaInfo] = useState([])
 	const [isWatched, setIsWatched] = useState<boolean>(false)
 	const [isFavorite, setIsFavorite] = useState<boolean>(false)
 	const [isWishlist, setIsWishlist] = useState<boolean>(false)
@@ -38,7 +37,6 @@ export default function ShowClientComponent({
 						item.mediaId === media.id
 				)
 				setDate(filtered[0]?.watchedDate)
-				setMediaInfo(filtered)
 				setIsWatched(filtered[0]?.isWatched)
 				setIsFavorite(filtered[0]?.isFavorite)
 				setIsWishlist(filtered[0]?.isWishlist)
@@ -81,7 +79,7 @@ export default function ShowClientComponent({
 					isFavorite: isFavorite,
 					isWishlist: isWishlist,
 
-					watchedDate: date, 
+					watchedDate: date,
 				}),
 			})
 			setTimeout(() => {
@@ -90,14 +88,12 @@ export default function ShowClientComponent({
 		}
 	}
 
-
 	if (!session?.user?.id) {
 		setTimeout(() => {
 			setIsLoading(false)
 		}, 300)
 	}
 
-	
 	const mediaProps = {
 		date,
 		setDate,
@@ -113,7 +109,7 @@ export default function ShowClientComponent({
 		setUserRating,
 		handleClick,
 	}
-	
+
 	return (
 		<>
 			{isLoading && (
@@ -127,10 +123,12 @@ export default function ShowClientComponent({
 				<MediaHeader mediaProps={mediaProps} />
 
 				<div className='px-3 sm:px-10 max-w-7xl mx-auto mt-5 pb-10'>
-					<MediaCast
-						cast={media?.credits?.cast}
-						mediaType={media.media_type}
-					/>
+					{media?.credits?.cast.length > 0 && (
+						<MediaCast
+							cast={media?.credits?.cast}
+							mediaType={media.media_type}
+						/>
+					)}
 
 					<MediaCommentary
 						userComment={userComment}
@@ -139,9 +137,11 @@ export default function ShowClientComponent({
 						isWatched={isWatched}
 					/>
 
-					<MediaRecommendation
-						recommendation={media?.recommendations?.results}
-					/>
+					{media?.recommendations?.results.length > 0 && (
+						<MediaRecommendation
+							recommendation={media?.recommendations?.results}
+						/>
+					)}
 				</div>
 			</div>
 		</>

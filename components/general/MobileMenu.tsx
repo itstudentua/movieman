@@ -10,10 +10,11 @@ import { useTheme } from 'next-themes'
 interface Props {
 	toggle: () => void
 	clearInput: () => void
+	isOpen: boolean
+	setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export function MobileMenu({ toggle, clearInput }: Props) {
-	const [isOpen, setIsOpen] = useState(false)
+export function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
 	const { theme, setTheme } = useTheme()
 
 	useEffect(() => {

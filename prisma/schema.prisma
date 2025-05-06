@@ -89,11 +89,6 @@ model UserListItem {
     id        String   @id @default(uuid())
     listId    String
     mediaId   Int
-    type      String   // movie/tv
-    title     String
-    poster    String?
-    year      Int?
-
     list      UserList @relation(fields: [listId], references: [id])
 }
 

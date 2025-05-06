@@ -29,9 +29,9 @@ export default function MediaCast({
 
 			<div className='w-full overflow-x-auto custom-scrollbar mt-5 pb-5 pl-1'>
 				<div className='flex gap-2 w-fit'>
-					{cast.map((person: CastMember) => (
+					{cast.map((person: CastMember, index: number) => (
 						<Link
-							key={person.id}
+							key={`${person.id}-${index}`}
 							href={`/people/${person.id}`}
 							className='flex-shrink-0 w-[130px] rounded-lg overflow-hidden shadow hover:shadow-lg transition hover:opacity-50 border h-fit'
 						>
@@ -55,7 +55,9 @@ export default function MediaCast({
 									{person.name}
 								</p>
 								<p className='text-xs text-gray-500 truncate'>
-									{mediaType === "tv" ? person?.roles[0]?.character : person?.character}
+									{mediaType === 'tv'
+										? person?.roles[0]?.character
+										: person?.character}
 								</p>
 								{mediaType === 'tv' && (
 									<p className='text-xs text-gray-400'>
