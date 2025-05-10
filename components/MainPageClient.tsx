@@ -9,7 +9,6 @@ import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
 import { mutate } from 'swr'
-import { UserMedia } from '@prisma/client'
 
 
 import {
@@ -99,7 +98,6 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 	const { data, error, isLoading } = useSWR(`/api/db`, fetcher, {
 		revalidateOnFocus: true,
 	})
-    
 
 	function useMediaFlags(data: any[], mediaId: number): MediaFlags | null {
 		
@@ -166,7 +164,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 							resetAutoSlide()
 						}}
 					>
-						<SelectTrigger className='w-[180px] bg-black text-white border-white/20 cursor-pointer hover:opacity-50'>
+						<SelectTrigger className='w-fit bg-black text-white border-white/20 cursor-pointer hover:opacity-50'>
 							<SelectValue placeholder='Category' />
 						</SelectTrigger>
 						<SelectContent className='bg-black text-white'>

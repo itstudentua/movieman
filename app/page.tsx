@@ -13,7 +13,8 @@ export default async function Home() {
 
 	return (
 		<main className='h-full w-full'>
-			<FullScreenCarousel allMovies={all} />
+			лул
+			{/* <FullScreenCarousel allMovies={all} /> */}
 		</main>
 	)
 }
