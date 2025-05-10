@@ -24,35 +24,46 @@ export default function ShowClientComponent({
 	const [isLoading, setIsLoading] = useState(true)
 
 	useEffect(() => {
+		let isMounted = true
+
 		const fetchMedia = async () => {
 			try {
 				setIsLoading(true)
 				const res = await fetch(`/api/db?type=${media?.media_type}`)
 				const data = await res.json()
 
-				// фильтрация по текущему пользователю и show
 				const filtered = data.filter(
 					(item: any) =>
 						item.userId === session?.user?.id &&
 						item.mediaId === media.id
 				)
-				setDate(filtered[0]?.watchedDate)
-				setIsWatched(filtered[0]?.isWatched)
-				setIsFavorite(filtered[0]?.isFavorite)
-				setIsWishlist(filtered[0]?.isWishlist)
-				setUserRating(filtered[0]?.userRating)
-				setUserComment(filtered[0]?.userComment)
+
+				if (isMounted) {
+					setDate(filtered[0]?.watchedDate)
+					setIsWatched(filtered[0]?.isWatched)
+					setIsFavorite(filtered[0]?.isFavorite)
+					setIsWishlist(filtered[0]?.isWishlist)
+					setUserRating(filtered[0]?.userRating)
+					setUserComment(filtered[0]?.userComment)
+					setIsLoading(false)
+				}
 			} catch (error) {
-				console.error('Ошибка при загрузке данных:', error)
-				setIsLoading(false)
+				if (isMounted) {
+					console.error('Ошибка при загрузке данных:', error)
+					setIsLoading(false)
+				}
 			}
-			setIsLoading(false)
 		}
 
 		if (session?.user?.id) {
 			fetchMedia()
 		}
+
+		return () => {
+			isMounted = false
+		}
 	}, [session?.user?.id, media.id])
+
 
 	const handleClick = async () => {
 		if (userRating !== -69) {
@@ -88,11 +99,16 @@ export default function ShowClientComponent({
 		}
 	}
 
-	if (!session?.user?.id) {
-		setTimeout(() => {
-			setIsLoading(false)
-		}, 300)
-	}
+	useEffect(() => {
+		if (!session?.user?.id) {
+			const timeout = setTimeout(() => {
+				setIsLoading(false)
+			}, 300)
+
+			return () => clearTimeout(timeout)
+		}
+	}, [session?.user?.id])
+
 
 	const mediaProps = {
 		date,
@@ -109,6 +125,9 @@ export default function ShowClientComponent({
 		setUserRating,
 		handleClick,
 	}
+
+console.log(media);
+
 
 	return (
 		<>
@@ -140,8 +159,10 @@ export default function ShowClientComponent({
 					{media?.recommendations?.results.length > 0 && (
 						<MediaRecommendation
 							recommendation={media?.recommendations?.results}
+							type='media'
 						/>
 					)}
+					
 				</div>
 			</div>
 		</>

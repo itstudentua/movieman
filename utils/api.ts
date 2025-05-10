@@ -109,12 +109,19 @@ export const getPerson = async (id: string) => {
 			known_for_department: person.known_for_department,
 			popularity: person.popularity,
 			gender: person.gender,
-			credits: {
-				cast: credits.cast.sort(
-					(a: any, b: any) => (b.popularity || 0) - (a.popularity || 0)
+			movies: credits.cast
+				.filter((item: any) => item.media_type === 'movie')
+				.sort(
+					(a: any, b: any) =>
+						(b.popularity || 0) - (a.popularity || 0)
 				),
-				crew: credits.crew,
-			},
+			tvShows: credits.cast
+				.filter((item: any) => item.media_type === 'tv')
+				.sort(
+					(a: any, b: any) =>
+						(b.popularity || 0) - (a.popularity || 0)
+				),
+			crew: credits.crew,
 		}
 	} catch (error) {
 		console.error('Error fetching person with credits:', error)

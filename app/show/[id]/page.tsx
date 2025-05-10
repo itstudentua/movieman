@@ -14,10 +14,6 @@ const ShowPage = async ({ params }: { params: Params }) => {
 	const { id } = await params
 	const show = await getShow(id)
 	const session = await getServerSession(authOptions)
-
-	console.log("sim:", show.similar);
-	console.log("rec: ",show.recommendations)
-	
 	
 	if (!show) {
 		return notFound()

@@ -14,6 +14,8 @@ import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
 import { CreateListDialog } from '@/components/general/CreateListDialog'
 import { useSession } from 'next-auth/react'
+import useSWR from 'swr'
+import { mutate } from 'swr'
 
 type ListBlockProps = {
 	mediaId?: number
@@ -27,17 +29,12 @@ type ListBlockProps = {
 	addUserMedia?: () => Promise<void>
 	setIsRefresh?: React.Dispatch<React.SetStateAction<boolean>>
 	handleListCreated?: () => Promise<void>
+	setIsPaused?: React.Dispatch<React.SetStateAction<boolean>>
+	setIsActive?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const fetchUserLists = async (userId: string) => {
-	const res = await fetch(`/api/lists/get?userId=${userId}`)
 
-	if (!res.ok) {
-		throw new Error('Ошибка при получении списков')
-	}
-
-	return res.json()
-}
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 
 export default function ListMenuBlock({
@@ -51,19 +48,22 @@ export default function ListMenuBlock({
 	setIsWishlist = () => {},
 	setIsRefresh = () => {},
 	addUserMedia = async () => {},
-	handleListCreated = async () => {}
+	handleListCreated = async () => {},
+	setIsPaused = () => {},
+	setIsActive = () => {}
 }: ListBlockProps) {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [menuOpen, setMenuOpen] = useState(false)
 	const { data: session } = useSession()
-	const [lists, setLists] = useState([])
 
-	useEffect(() => {
-		if (!session?.user?.id) return
-		fetchUserLists(session.user.id)
-			.then(setLists)
-			.catch(err => console.error(err))
-	}, [session, dialogOpen])
+	// function to get lists of user
+	const {
+		data: userLists,
+		error: userListsError,
+		isLoading: userListsLoading,
+	} = useSWR(`/api/lists/get?userId=${session?.user.id}`, fetcher, {
+		revalidateOnFocus: true,
+	})
 
 	const handleToggle = async (listId: string, mediaId: number) => {
 		await fetch('/api/lists/toggle-item', {
@@ -72,13 +72,35 @@ export default function ListMenuBlock({
 			body: JSON.stringify({ listId, mediaId }),
 		})
 
-		if (session?.user?.id) {
-			const updatedLists = await fetchUserLists(session.user.id)
-			setLists(updatedLists)
-		}
+		
 		addUserMedia() // add to usermedia
 		handleListCreated()
+		await mutate(`/api/lists/get?userId=${session?.user.id}`)
+		await mutate(`/api/db`)
+
 	}
+
+	async function listMutate() {
+		await mutate(`/api/lists/get?userId=${session?.user.id}`)
+		await mutate(`/api/db`)
+	}
+	
+
+	useEffect(() => {
+		menuOpen ? setIsActive(true) : setIsActive(false)
+		menuOpen && setIsPaused(menuOpen)
+	}, [menuOpen])
+
+	if (
+		userListsLoading
+	)
+		return (
+			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
+				<span className='text-white text-xl animate-pulse'>
+					Loading...
+				</span>
+			</div>
+		)
 
 	return (
 		<div className='flex gap-4 mt-3'>
@@ -121,11 +143,12 @@ export default function ListMenuBlock({
 				<DropdownMenuContent
 					align='end'
 					className='bg-white dark:bg-black truncate'
+					// onMouseEnter={() => setIsPaused(true)}
+					// onMouseLeave={() => setIsPaused(false)}
 				>
-					{lists.map((listItem: any) => (
+					{userLists.map((listItem: any) => (
 						<DropdownMenuCheckboxItem
 							key={listItem.id}
-							
 							checked={listItem.items?.some(
 								(item: any) => item.mediaId === mediaId
 							)}
@@ -153,6 +176,7 @@ export default function ListMenuBlock({
 				open={dialogOpen}
 				setOpen={setDialogOpen}
 				handleListCreated={handleListCreated}
+				listMutate={listMutate}
 			/>
 
 			<Tooltip>

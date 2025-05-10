@@ -10,4 +10,6 @@
 
 ### Google auth
 
-Credentials -> MovieMan -> edit url 
+Credentials -> MovieMan -> edit url from localhost to another ip
+
+

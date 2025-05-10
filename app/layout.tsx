@@ -5,6 +5,7 @@ import { Inter } from 'next/font/google'
 import SessionWrapper from '@/components/general/SessionWrapper'
 import Header from '@/components/general/Header'
 import { Toaster } from 'sonner'
+import ScrollToTopButton from '@/components/general/ScrollToTopButton'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -32,6 +33,7 @@ export default function RootLayout({
 							<footer className='p-3 font-semibold flex justify-center items-center'>
 								MovieMan {new Date().getFullYear()}
 							</footer>
+							<ScrollToTopButton />
 						</div>
 						<Toaster
 							duration={1500}

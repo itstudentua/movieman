@@ -9,6 +9,7 @@ export async function POST(req: Request) {
 	if (!session?.user?.id) {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 	}
+	
 
 	const body = await req.json()
 
@@ -23,7 +24,6 @@ export async function POST(req: Request) {
 	if (existing) {
 		// Создаём объект с обновляемыми полями
 		const updateData: any = {}
-
 		if (body.title !== undefined) updateData.title = body.title
 		if (body.year !== undefined) updateData.year = body.year
 		if (body.poster !== undefined) updateData.poster = body.poster
@@ -54,7 +54,6 @@ export async function POST(req: Request) {
 		return NextResponse.json(updated)
 	}
 
-
 	// ✅ Если нет записи — создаём
 	const newEntry = await prisma.userMedia.create({
 		data: {
@@ -80,20 +79,66 @@ export async function POST(req: Request) {
 
 
 
+// export async function GET(req: Request) {
+// 	const session = await getServerSession(authOptions)
+
+// 	if (!session?.user?.id) {
+// 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+// 	}
+
+// 	const { searchParams } = new URL(req.url)
+// 	const type = searchParams.get('type') // 'movie' или 'tv'
+
+// 	const media = await prisma.userMedia.findMany({
+// 		where: {
+// 			userId: session.user.id,
+// 			...(type ? { type } : {}), // добавляем фильтр, если есть type
+// 		},
+// 		orderBy: {
+// 			createdAt: 'desc',
+// 		},
+// 	})
+
+// 	return NextResponse.json(media)
+// }
+
 export async function GET(req: Request) {
 	const session = await getServerSession(authOptions)
+	const { searchParams } = new URL(req.url)
 
-	if (!session?.user?.id) {
-		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+	const userIdParam = searchParams.get('userId')
+	const listType = searchParams.get('listType') // 'watched' | 'wishlist' | 'favorite'
+
+	// userId либо из параметра, либо из сессии
+	const userId = userIdParam || session?.user?.id
+
+	if (!userId) {
+		return NextResponse.json(
+			{ error: 'Missing userId or session' },
+			{ status: 400 }
+		)
 	}
 
-	const { searchParams } = new URL(req.url)
-	const type = searchParams.get('type') // 'movie' или 'tv'
+	// Фильтр по типу списка
+	let listFilter = {}
+	if (listType === 'watched') {
+		listFilter = { isWatched: true }
+	} else if (listType === 'wishlist') {
+		listFilter = { isWishlist: true }
+	} else if (listType === 'favorite') {
+		listFilter = { isFavorite: true }
+	} else if (
+		listType &&
+		!['watched', 'wishlist', 'favorite'].includes(listType)
+	) {
+		return NextResponse.json({ error: 'Invalid listType' }, { status: 400 })
+	}
 
+	// Запрос к БД
 	const media = await prisma.userMedia.findMany({
 		where: {
-			userId: session.user.id,
-			...(type ? { type } : {}), // добавляем фильтр, если есть type
+			userId,
+			...listFilter,
 		},
 		orderBy: {
 			createdAt: 'desc',
@@ -102,9 +147,3 @@ export async function GET(req: Request) {
 
 	return NextResponse.json(media)
 }
-
-
-
-
-
-

@@ -67,6 +67,7 @@ export function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
 									>
 										Theme: {theme === 'dark' ? '🌝' : '🌞'}
 									</li>
+									
 									<li
 										onClick={() => {
 											setIsOpen(false)
@@ -75,21 +76,7 @@ export function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
 										className='bg-black text-white dark:bg-white dark:text-black rounded-md text-2xl font-semibold hover:opacity-80 cursor-pointer'
 									>
 										<Link
-											href='/search'
-											onClick={clearInput}
-											className='block w-full h-full py-2 px-5'
-										>
-											Advanced Search
-										</Link>
-									</li>
-									<li
-										onClick={() => {
-											setIsOpen(false)
-											toggle()
-										}}
-										className='bg-black text-white dark:bg-white dark:text-black rounded-md text-2xl font-semibold hover:opacity-80 cursor-pointer'
-									>
-										<Link
+											prefetch={true}
 											href='/movies'
 											onClick={clearInput}
 											className='block w-full h-full py-2 px-5'
@@ -105,6 +92,7 @@ export function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
 										className='bg-black text-white dark:bg-white dark:text-black rounded-md text-2xl font-semibold hover:opacity-80 cursor-pointer'
 									>
 										<Link
+											prefetch={true}
 											href='/tvshows'
 											onClick={clearInput}
 											className='block w-full h-full py-2 px-5'
@@ -120,6 +108,7 @@ export function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
 										className='bg-black text-white dark:bg-white dark:text-black rounded-md text-2xl font-semibold hover:opacity-80 cursor-pointer'
 									>
 										<Link
+											prefetch={true}
 											href='/settings'
 											onClick={clearInput}
 											className='block w-full h-full py-2 px-5'

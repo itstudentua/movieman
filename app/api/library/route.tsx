@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
 		return new Response('Unauthorized', { status: 401 })
 	}
 
-	const list = req.nextUrl.searchParams.get('type')
+	// const list = req.nextUrl.searchParams.get('type')
 	//const media = req.nextUrl.searchParams.get('media')
 
 	// let filter = {}
@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
 	// 	},
 	// })
 
-	let filter = {}
+	// let filter = {}
 
 	const userMedia = await prisma.userMedia.findMany({
 		where: {

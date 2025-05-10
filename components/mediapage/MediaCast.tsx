@@ -31,6 +31,7 @@ export default function MediaCast({
 				<div className='flex gap-2 w-fit'>
 					{cast.map((person: CastMember, index: number) => (
 						<Link
+							prefetch={true}
 							key={`${person.id}-${index}`}
 							href={`/people/${person.id}`}
 							className='flex-shrink-0 w-[130px] rounded-lg overflow-hidden shadow hover:shadow-lg transition hover:opacity-50 border h-fit'

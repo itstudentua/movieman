@@ -10,22 +10,32 @@ interface RecommendationItem {
 	first_air_date?: string
 	release_date?: string
 	media_type: 'movie' | 'tv'
+	character?: string
+	type: string
 }
 
 export default function MediaRecommendation({
 	recommendation,
+	type = 'media',
+	mediaType = 'Media',
 }: {
 	recommendation: RecommendationItem[]
+	type: string
+	mediaType?: string
 }) {
 	return (
 		<>
 			<h2 className='text-2xl font-medium mt-5 border-t-2 pt-5'>
-				Recommendations
+				{type === 'media' ? 'Recommendations' : mediaType}
 			</h2>
 
 			<div className='w-full overflow-x-auto custom-scrollbar mt-5 pb-5 pl-1'>
 				<div className='flex gap-2 w-fit'>
-					{recommendation.map((rec: RecommendationItem) => {
+					{Array.from(
+						new Map(
+							recommendation.map(item => [item.id, item])
+						).values()
+					).map((rec: RecommendationItem) => {
 						const title =
 							rec.media_type === 'movie'
 								? rec.original_title
@@ -48,7 +58,8 @@ export default function MediaRecommendation({
 
 						return (
 							<Link
-								key={rec.id}
+								prefetch={true}
+								key={rec.id + mediaType + rec.type}
 								href={link}
 								className='flex-shrink-0 w-[300px] rounded-lg overflow-hidden shadow hover:shadow-lg transition hover:opacity-50'
 							>
@@ -74,9 +85,17 @@ export default function MediaRecommendation({
 									<p className='my-1 text-gray-500 text-sm'>
 										Year: {year || 'Unknown'}
 									</p>
-									<p className='text-xs'>
-										Rating: {rec.vote_average.toFixed(1)} ⭐️
-									</p>
+									{rec.vote_average !== 0 && (
+										<p className='text-xs'>
+											Rating:{' '}
+											{rec.vote_average.toFixed(1)} ⭐️
+										</p>
+									)}
+									{rec?.character && (
+										<p className='mt-2 text-sm text-gray-500'>
+											Character: {rec?.character}
+										</p>
+									)}
 								</div>
 							</Link>
 						)

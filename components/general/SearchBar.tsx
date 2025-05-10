@@ -41,9 +41,7 @@ const SearchDropdown = ({ mobileMenu, value, onChange }: Props) => {
 	const fetchMovies = async (query: string) => {
 		try {
 			const response = await axios.get(`/api/search?query=${query}`)
-			setResults(response.data.results)
-			console.log(response.data.results)
-			
+			setResults(response.data.results)			
 			setIsOpen(true)
 		} catch (error) {
 			console.error('Ошибка при получении данных с API:', error)
@@ -291,36 +289,7 @@ const SearchDropdown = ({ mobileMenu, value, onChange }: Props) => {
 									</div>
 								</li>
 							))}
-						<Link
-							onClick={() => (setIsOpen(false), onChange(''))}
-							href='/search'
-						>
-							<li
-								key={
-									results.filter(item => !!item.poster_path)
-										.length
-								}
-								onMouseEnter={() =>
-									setHighlightedIndex(
-										results.filter(
-											item => !!item.poster_path
-										).length
-									)
-								}
-								className={`p-2 cursor-pointer border-b ${
-									highlightedIndex ===
-									results.filter(item => !!item.poster_path)
-										.length
-										? 'bg-gray-100 dark:text-black'
-										: 'hover:bg-gray-100 dark:hover:text-black'
-								}`}
-							>
-								<div className='flex items-center gap-2'>
-									<span>Advanced search</span>
-									<Search size={20} />
-								</div>
-							</li>
-						</Link>
+						
 					</ul>
 				)}
 			</div>

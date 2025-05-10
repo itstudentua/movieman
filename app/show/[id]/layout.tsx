@@ -19,8 +19,6 @@ const ShowPage = async ({ params, children }: { params: Params, children: React.
 	const { id } = await params
 	const show = await getShow(id)
 
-	console.log('sim:', show.similar)
-	console.log('rec: ', show.recommendations)
 
 	if (!show) {
 		return notFound()

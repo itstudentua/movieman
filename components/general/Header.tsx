@@ -35,7 +35,14 @@ export default function Header() {
     return (
 		<header className='w-full dark:bg-black bg-white border-b sticky top-0 z-50'>
 			<div className='mobile-header flex justify-between items-center gap-1 sm:gap-5 max-w-7xl py-3 sm:px-10 px-5 m-auto'>
-				<Link onClick={() => {setInputValue(''); setIsOpen(false)}} href='/'>
+				<Link
+					prefetch={true}
+					onClick={() => {
+						setInputValue('')
+						setIsOpen(false)
+					}}
+					href='/'
+				>
 					<h1 className='mobile-logo text-2xl font-semibold cursor-pointer select-none group rounded-sm hover:opacity-70 transition-all duration-300'>
 						Movie
 						<span className='font-bold px-1 dark:bg-white dark:text-black bg-black text-white rounded-sm transition-colors duration-300 dark:group-hover:bg-black dark:group-hover:text-white group-hover:bg-white group-hover:text-black'>
@@ -115,6 +122,7 @@ export default function Header() {
 
 										<DropdownMenuItem asChild>
 											<Link
+												prefetch={true}
 												href='/library'
 												className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer w-full'
 												onClick={() => setIsOpen(false)}
@@ -133,13 +141,15 @@ export default function Header() {
 								</DropdownMenu>
 							) : (
 								<Link
+									prefetch={true}
 									href={`/login/signin?callbackUrl=${encodeURIComponent(
 										pathname
 									)}`}
 								>
-									<button 
-									onClick={() => setIsOpen(false)}
-									className='mobile-signin grow hover:opacity-70 font-semibold cursor-pointer bg-black text-white dark:bg-white dark:text-black rounded-sm py-1 px-2'>
+									<button
+										onClick={() => setIsOpen(false)}
+										className='mobile-signin grow hover:opacity-70 font-semibold cursor-pointer bg-black text-white dark:bg-white dark:text-black rounded-sm py-1 px-2'
+									>
 										Sign in
 									</button>
 								</Link>
@@ -201,7 +211,7 @@ export function SearchDropdown2({ onClose }: Props) {
 
 			setIsOpen(true)
 		} catch (error) {
-			console.error('Ошибка при получении данных с API:', error)
+			console.error('Error API:', error)
 		}
 	}
 
@@ -457,38 +467,7 @@ export function SearchDropdown2({ onClose }: Props) {
 									</div>
 								</li>
 							))}
-						<Link
-							onClick={() => (
-								setIsOpen(false), setQuery(''), onClose()
-							)}
-							href='/search'
-						>
-							<li
-								key={
-									results.filter(item => !!item.poster_path)
-										.length
-								}
-								onMouseEnter={() =>
-									setHighlightedIndex(
-										results.filter(
-											item => !!item.poster_path
-										).length
-									)
-								}
-								className={`p-2 cursor-pointer border-b ${
-									highlightedIndex ===
-									results.filter(item => !!item.poster_path)
-										.length
-										? 'bg-gray-100 dark:text-black'
-										: 'hover:bg-gray-100 dark:hover:text-black'
-								}`}
-							>
-								<div className='flex items-center gap-2'>
-									<span>Advanced search</span>
-									<Search size={20} />
-								</div>
-							</li>
-						</Link>
+						
 					</ul>
 				)}
 			</motion.div>

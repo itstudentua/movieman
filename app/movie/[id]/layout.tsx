@@ -1,6 +1,6 @@
 // pages/show/[id]/page.tsx
 import { notFound } from 'next/navigation'
-import { getMovie, getShow } from '@/utils/api'
+import { getMovie } from '@/utils/api'
 
 type Params = Promise<{ id: string }>
 

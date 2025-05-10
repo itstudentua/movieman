@@ -19,16 +19,19 @@ export function CreateListDialog({
 	open,
 	setOpen,
 	handleListCreated,
+	listMutate,
 }: {
 	open: boolean
 	setOpen: React.Dispatch<React.SetStateAction<boolean>>
 	handleListCreated: () => Promise<void>
+	listMutate: () => Promise<void>
 }) {
 	const [listName, setListName] = useState('')
 	const { data: session } = useSession()
 
 	const handleCreate = async () => {
 		if (!listName.trim() || !session?.user) return
+		setOpen(false)
 
 		const res = await fetch('/api/lists/create', {
 			method: 'POST',
@@ -42,13 +45,13 @@ export function CreateListDialog({
 		if (res.ok) {
 			toast.success('Success!')
 			setListName('')
-			setOpen(false)
 			handleListCreated()
 		} else if (res.status === 409) {
 			toast.error('List with such name already exists')
 		} else {
 			toast.error('Error!')
 		}
+		listMutate()
 	}
 
 	return (
@@ -68,7 +71,7 @@ export function CreateListDialog({
 				/>
 
 				<DialogFooter>
-					<Button onClick={handleCreate}>Create</Button>
+					<Button className='cursor-pointer' onClick={handleCreate}>Create</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

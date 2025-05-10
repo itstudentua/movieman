@@ -22,6 +22,7 @@ import {
 	SelectValue,
 } from '@/components/ui/select'
 import ListMenuBlock from '../general/ListMenuBlock'
+import Link from 'next/link'
 
 type MediaProps = {
 	media: any
@@ -168,10 +169,12 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 										: `, ${media?.number_of_seasons} seasons, ${media?.number_of_episodes} episodes`
 									: null}
 							</p>
-							<p>
-								Global Rating: {media?.vote_average.toFixed(1)}{' '}
-								⭐️
-							</p>
+							{media?.vote_average !== 0 && (
+								<p>
+									Global Rating:{' '}
+									{media?.vote_average.toFixed(1)} ⭐️
+								</p>
+							)}
 							{session?.user && isWatched && (
 								<div className='mt-2 flex flex-col bg-white/80 text-black w-fit rounded-lg p-2'>
 									<div className='flex gap-2 items-center'>
@@ -295,9 +298,11 @@ function OverViewSection({ media }: { media: any }) {
 								key={creator?.id}
 								className='dark:text-gray-400 text-gray-800 text-sm'
 							>
-								<span className='text-xl text-black dark:text-white font-semibold'>
-									{creator?.name}
-								</span>
+								<Link href={`/people/${creator?.id}`}>
+									<span className='text-xl text-black dark:text-white font-semibold'>
+										{creator?.name}
+									</span>
+								</Link>
 								<br />
 								Creator
 							</li>
@@ -316,9 +321,11 @@ function OverViewSection({ media }: { media: any }) {
 									key={person?.id + person?.job}
 									className='dark:text-gray-400 text-gray-800 text-sm'
 								>
-									<span className='text-xl text-black dark:text-white font-semibold'>
-										{person?.name}
-									</span>
+									<Link href={`/people/${person.id}`}>
+										<span className='text-xl text-black dark:text-white font-semibold'>
+											{person?.name}
+										</span>
+									</Link>
 									<br />
 									{/* Объединяем 'Writer' и 'Screenplay' в одну роль */}
 									{person.job === 'Screenplay' ||

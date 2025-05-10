@@ -53,6 +53,9 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		'trending' | 'topRated' | 'upcoming'
 	>('trending')
 	const movies = allMovies[category]
+	const [isPaused, setIsPaused] = useState(false)
+	const [isActive, setIsActive] = useState(false) // включен ли список, чтобы блокировать автопрокрутку
+
 
 	const { data: session } = useSession()
 
@@ -63,10 +66,13 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		if (autoSlideRef.current) {
 			clearInterval(autoSlideRef.current)
 		}
-		autoSlideRef.current = setInterval(() => {
-			nextSlide(false)
-		}, 10000)
+		if (!isPaused) {
+			autoSlideRef.current = setInterval(() => {
+				nextSlide(false)
+			}, 7000)
+		}
 	}
+
 
 	const nextSlide = (manual = true) => {
 		setIndex(prev => (prev + 1) % movies.length)
@@ -78,13 +84,15 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		if (manual) resetAutoSlide()
 	}
 
-	// авто-слайд
 	useEffect(() => {
-		resetAutoSlide()
+		if (!isPaused) {
+			resetAutoSlide()
+		}
 		return () => {
 			if (autoSlideRef.current) clearInterval(autoSlideRef.current)
 		}
-	}, [])
+	}, [isPaused])
+
 
 	const movie = movies[index]
 	
@@ -92,7 +100,6 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		revalidateOnFocus: true,
 	})
     
-	console.log(movies)
 
 	function useMediaFlags(data: any[], mediaId: number): MediaFlags | null {
 		
@@ -196,7 +203,11 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 				</AnimatePresence>
 
 				{/* Контент */}
-				<div className='relative z-20 flex h-full items-center justify-center px-6 md:px-16'>
+				<div
+					onPointerEnter={() => setIsPaused(true)}
+					onPointerLeave={() => setIsPaused(isActive ? true : false)}
+					className='relative z-20 flex h-full items-center justify-center px-6 md:px-16'
+				>
 					<div className='flex flex-col md:flex-row items-center gap-8 max-w-6xl w-full h-full'>
 						{/* Постер */}
 						<motion.div
@@ -207,6 +218,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 							className='w-[250px] flex-shrink-0 hidden sm:block mt-5'
 						>
 							<Link
+								prefetch={true}
 								key={movie.id}
 								href={`/movie/${movie.id}`}
 								className='shadow hover:shadow-lg transition hover:opacity-50'
@@ -230,6 +242,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 							className='h-full flex flex-col gap-2'
 						>
 							<Link
+								prefetch={true}
 								key={movie.id}
 								href={`/movie/${movie.id}`}
 								className='w-fit transition hover:opacity-50'
@@ -247,6 +260,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 								className='w-[250px] flex-shrink-0 block sm:hidden self-center'
 							>
 								<Link
+									prefetch={true}
 									key={movie.id}
 									href={`/movie/${movie.id}`}
 									className='shadow hover:shadow-lg transition hover:opacity-50'
@@ -279,6 +293,8 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 							</p>
 							{session?.user.id && (
 								<ListMenuBlock
+									setIsActive={setIsActive}
+									setIsPaused={setIsPaused}
 									mediaId={movie.id}
 									addUserMedia={() => updateMovie(movie)}
 									watchedButton={category !== 'upcoming'}
