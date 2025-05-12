@@ -14,7 +14,7 @@ interface Props {
 	setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-export function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
+export default function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Props) {
 	const { theme, setTheme } = useTheme()
 
 	useEffect(() => {

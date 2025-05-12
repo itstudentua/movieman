@@ -37,9 +37,9 @@ const PersonPage = async ({ params }: { params: Params }) => {
 		<div className='px-3 sm:px-10 max-w-7xl mx-auto mobile-header'>
 			<div className='mt-5 sm:mt-10 flex gap-5'>
 				{person.profile_path && (
-					<div className='relative hidden md:block w-[250px] aspect-[2/3] flex-shrink-0'>
+					<div className='relative hidden sm:block w-[250px] aspect-[2/3] flex-shrink-0'>
 						<img
-							src={`https://image.tmdb.org/t/p/w500${person.profile_path}`}
+							src={`https://image.tmdb.org/t/0p/w500${person.profile_path}`}
 							alt={person.name}
 							className='rounded shadow-lg'
 						/>

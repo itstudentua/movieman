@@ -1,24 +1,29 @@
 'use client'
 
-import Image from 'next/image'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useMemo } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { cn } from '@/lib/utils' // если используешь shadcn
-import Link from 'next/link'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
 import { mutate } from 'swr'
+import dynamic from 'next/dynamic'
+
+const MainPageSelect = dynamic(
+	() => import('./MainPageSelect'))
+
+const MotionDiv = dynamic(
+	() => import('framer-motion').then(mod => mod.motion.div))
+
+const AnimatePresence = dynamic(
+	() => import('framer-motion').then(mod => mod.AnimatePresence))
 
 
-import {
-	Select,
-	SelectTrigger,
-	SelectValue,
-	SelectContent,
-	SelectItem,
-} from '@/components/ui/select'
-import ListMenuBlock from './general/ListMenuBlock'
+const ListMenuBlock = dynamic(() => import('../general/ListMenuBlock'))
+
+const DynamicImage = dynamic(() => import('next/image'))
+
+const DynamicLink = dynamic(() => import('next/link'))
+
 
 type Movie = {
 	id: number
@@ -48,16 +53,16 @@ const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export default function FullScreenCarousel({ allMovies }: Props) {
 	const [index, setIndex] = useState(0)
-    const [category, setCategory] = useState<
+	const [category, setCategory] = useState<
 		'trending' | 'topRated' | 'upcoming'
 	>('trending')
-	const movies = allMovies[category]
 	const [isPaused, setIsPaused] = useState(false)
 	const [isActive, setIsActive] = useState(false) // включен ли список, чтобы блокировать автопрокрутку
 
+	const movies = useMemo(() => allMovies[category], [allMovies, category])
+	const movie = movies[index]
 
 	const { data: session } = useSession()
-
 
 	const autoSlideRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -71,7 +76,6 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 			}, 7000)
 		}
 	}
-
 
 	const nextSlide = (manual = true) => {
 		setIndex(prev => (prev + 1) % movies.length)
@@ -93,22 +97,19 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 	}, [isPaused])
 
 
-	const movie = movies[index]
-	
 	const { data, error, isLoading } = useSWR(`/api/db`, fetcher, {
 		revalidateOnFocus: true,
 	})
 
 	function useMediaFlags(data: any[], mediaId: number): MediaFlags | null {
-		
-			const item = data.find(entry => entry.mediaId === mediaId)
-			if (!item) return null
+		const item = data.find(entry => entry.mediaId === mediaId)
+		if (!item) return null
 
-			return {
-				isWatched: item.isWatched,
-				isWishlist: item.isWishlist,
-				isFavorite: item.isFavorite,
-			}
+		return {
+			isWatched: item.isWatched,
+			isWishlist: item.isWishlist,
+			isFavorite: item.isFavorite,
+		}
 	}
 
 	async function updateMovie(media: any) {
@@ -119,7 +120,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 			},
 			body: JSON.stringify({
 				mediaId: media.id,
-				type: media.media_type || "movie",
+				type: media.media_type || 'movie',
 				title: media?.name || media?.title,
 				year: media?.first_air_date
 					? parseInt(media.first_air_date.split('-')[0]) // Для сериалов
@@ -139,7 +140,6 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		await mutate(`/api/db`)
 	}
 
-
 	if (!movies || movies.length === 0 || isLoading) {
 		return (
 			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
@@ -150,39 +150,20 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		)
 	}
 
-	
-
 	return (
 		<>
 			<div className='relative w-full min-h-full overflow-hidden flex flex-col justify-between items-center py-3 sm:py-5'>
 				<div className='mobile-header px-3 sm:px-10 z-22 w-full sm:w-fit'>
-					<Select
-						value={category}
-						onValueChange={val => {
-							setCategory(val as any)
-							setIndex(0)
-							resetAutoSlide()
-						}}
-					>
-						<SelectTrigger className='w-fit bg-black text-white border-white/20 cursor-pointer hover:opacity-50'>
-							<SelectValue placeholder='Category' />
-						</SelectTrigger>
-						<SelectContent className='bg-black text-white'>
-							<SelectItem value='trending'>
-								🔥 Trending
-							</SelectItem>
-							<SelectItem value='topRated'>
-								🏆 Top rated
-							</SelectItem>
-							<SelectItem value='upcoming'>
-								🎬 Upcoming
-							</SelectItem>
-						</SelectContent>
-					</Select>
+					<MainPageSelect
+						category={category}
+						setCategory={setCategory}
+						setIndex={setIndex}
+						resetAutoSlide={resetAutoSlide}
+					/>
 				</div>
 				{/* Фон */}
 				<AnimatePresence mode='wait'>
-					<motion.div
+					<MotionDiv
 						key={movie.id}
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
@@ -190,14 +171,14 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 						transition={{ duration: 0.8 }}
 						className='absolute inset-0 hidden sm:block'
 					>
-						<Image
+						<DynamicImage
 							src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
 							alt={movie.title}
 							fill
 							className='object-cover'
 						/>
 						<div className='absolute inset-0 bg-white/50 dark:bg-black/70' />
-					</motion.div>
+					</MotionDiv>
 				</AnimatePresence>
 
 				{/* Контент */}
@@ -208,38 +189,38 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 				>
 					<div className='flex flex-col md:flex-row items-center gap-8 max-w-6xl w-full h-full'>
 						{/* Постер */}
-						<motion.div
+						<MotionDiv
 							key={movie.poster_path}
 							initial={{ opacity: 0, x: -50 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ duration: 0.8 }}
 							className='w-[250px] flex-shrink-0 hidden sm:block mt-5'
 						>
-							<Link
+							<DynamicLink
 								prefetch={true}
 								key={movie.id}
 								href={`/movie/${movie.id}`}
 								className='shadow hover:shadow-lg transition hover:opacity-50'
 							>
-								<Image
+								<DynamicImage
 									src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
 									alt={movie.title}
 									width={250}
 									height={375}
 									className='rounded-xl shadow-lg'
 								/>
-							</Link>
-						</motion.div>
+							</DynamicLink>
+						</MotionDiv>
 
 						{/* Текст */}
-						<motion.div
+						<MotionDiv
 							key={movie.title}
 							initial={{ opacity: 0, x: 50 }}
 							animate={{ opacity: 1, x: 0 }}
 							transition={{ duration: 0.8 }}
 							className='h-full flex flex-col gap-2'
 						>
-							<Link
+							<DynamicLink
 								prefetch={true}
 								key={movie.id}
 								href={`/movie/${movie.id}`}
@@ -248,22 +229,22 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 								<h1 className='text-3xl md:text-5xl font-bold'>
 									{movie.title}
 								</h1>
-							</Link>
+							</DynamicLink>
 
-							<motion.div
+							<MotionDiv
 								key={movie.poster_path}
 								initial={{ opacity: 0, x: -50 }}
 								animate={{ opacity: 1, x: 0 }}
 								transition={{ duration: 0.8 }}
 								className='w-[250px] flex-shrink-0 block sm:hidden self-center'
 							>
-								<Link
+								<DynamicLink
 									prefetch={true}
 									key={movie.id}
 									href={`/movie/${movie.id}`}
 									className='shadow hover:shadow-lg transition hover:opacity-50'
 								>
-									<Image
+									<DynamicImage
 										src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
 										alt={movie.title}
 										width={250}
@@ -271,8 +252,8 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 										priority
 										className='rounded-xl shadow-lg'
 									/>
-								</Link>
-							</motion.div>
+								</DynamicLink>
+							</MotionDiv>
 
 							<p className='mt-5 text-gray-900 dark:text-gray-300 text-base md:text-lg line-clamp-2 sm:line-clamp-5'>
 								{movie.overview}
@@ -336,7 +317,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 									}
 								/>
 							)}
-						</motion.div>
+						</MotionDiv>
 					</div>
 				</div>
 

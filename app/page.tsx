@@ -1,4 +1,4 @@
-import FullScreenCarousel from '@/components/MainPageClient'
+import FullScreenCarousel from '@/components/mainpage/FullScreenCarousel'
 import { getPopularMovies } from '@/utils/api'
 
 export default async function Home() {
@@ -13,8 +13,7 @@ export default async function Home() {
 
 	return (
 		<main className='h-full w-full'>
-			лул
-			{/* <FullScreenCarousel allMovies={all} /> */}
+			<FullScreenCarousel allMovies={all} />
 		</main>
 	)
 }

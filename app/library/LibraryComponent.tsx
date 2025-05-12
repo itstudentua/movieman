@@ -4,26 +4,24 @@ import useSWR from 'swr'
 import { mutate } from 'swr'
 
 import Link from 'next/link'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEffect, useState } from 'react'
-import ListMenuBlock from '@/components/general/ListMenuBlock'
 import { UserMedia } from '@prisma/client'
 import { formatDate } from 'lib/formatDate'
 import { usePathname } from 'next/navigation'
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select'
+
 import { ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { filterMediaByTab, sortMedia } from './libraryUtils'
-import DeleteListDialog from './DeleteListDialog'
-import EditListDialog from './EditListDialog'
 import { toast } from 'sonner'
 import { Share2 } from 'lucide-react'
 import { Session } from 'next-auth'
+import dynamic from 'next/dynamic'
+
+const ListMenuBlock = dynamic(() => import('@/components/general/ListMenuBlock'))
+const LibraryTabsComponent = dynamic(() => import('./LibraryTabsComponent'))
+const EditListDialog = dynamic(() => import('./EditListDialog'))
+const DeleteListDialog = dynamic(() => import('./DeleteListDialog'))
+
+const LibrarySelectedList = dynamic(() => import('./LibrarySelectList'))
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
@@ -52,7 +50,6 @@ export default function MyLibrary({session}: {session: Session | null}) {
 	// function to get lists of user
 	const {
 		data: userLists,
-		error: userListsError,
 		isLoading: userListsLoading,
 	} = useSWR(`/api/lists/get?userId=${session?.user.id}`, fetcher, {
 		revalidateOnFocus: true,
@@ -222,84 +219,15 @@ export default function MyLibrary({session}: {session: Session | null}) {
 				</span>
 			</h1>
 
-			<div className='flex gap-2 items-baseline flex-wrap'>
-				<Tabs value={activeTab} onValueChange={setActiveTab}>
-					<TabsList className='p-0 rounded-sm h-auto gap-3 bg-transparent flex-wrap items-center'>
-						<TabsTrigger
-							className='cursor-pointer hover:opacity-70 px-2 py-1 rounded-sm data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-sm dark:data-[state=active]:bg-white dark:data-[state=active]:text-black border-black dark:border-white'
-							value='watched'
-						>
-							Watched
-						</TabsTrigger>
-						<TabsTrigger
-							className='cursor-pointer hover:opacity-70 px-2 py-1 rounded-sm data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-sm dark:data-[state=active]:bg-white dark:data-[state=active]:text-black border-black dark:border-white'
-							value='wishlist'
-						>
-							WishList
-						</TabsTrigger>
-						<TabsTrigger
-							className='cursor-pointer hover:opacity-70 px-2 py-1 rounded-sm data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-sm dark:data-[state=active]:bg-white dark:data-[state=active]:text-black border-black dark:border-white'
-							value='favorite'
-						>
-							Favorite
-						</TabsTrigger>
-					</TabsList>
-					<TabsContent value='watched' />
-					<TabsContent value='wishlist' />
-					<TabsContent value='favorite' />
-				</Tabs>
-
-				{userLists.length > 0 && (
-					<Select
-						value={selectedListId}
-						onValueChange={handleSelectChange}
-					>
-						<SelectTrigger
-							className={
-								selectedListId
-									? 'bg-black text-white dark:bg-white dark:text-black cursor-pointer font-semibold'
-									: 'cursor-pointer'
-							}
-						>
-							<SelectValue placeholder='My lists' />
-						</SelectTrigger>
-						<SelectContent>
-							{userLists.map((listItem: any) => (
-								<SelectItem
-									key={listItem.id}
-									value={listItem.id}
-									className='cursor-pointer'
-								>
-									{listItem.name}
-								</SelectItem>
-							))}
-						</SelectContent>
-					</Select>
-				)}
-			</div>
-
-			<Tabs
-				className='mt-3'
-				value={mediaType}
-				onValueChange={setMediaType}
-			>
-				<TabsList className='p-0 rounded-sm h-auto gap-2 bg-transparent'>
-					<TabsTrigger
-						className='cursor-pointer hover:opacity-70 px-2 py-1 rounded-sm data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-sm dark:data-[state=active]:bg-white dark:data-[state=active]:text-black border-black dark:border-white'
-						value='movie'
-					>
-						Movie
-					</TabsTrigger>
-					<TabsTrigger
-						className='cursor-pointer hover:opacity-70 px-2 py-1 rounded-sm data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:font-bold data-[state=active]:shadow-sm dark:data-[state=active]:bg-white dark:data-[state=active]:text-black border-black dark:border-white'
-						value='tv'
-					>
-						TV Series
-					</TabsTrigger>
-				</TabsList>
-				<TabsContent value='movie' />
-				<TabsContent value='tv' />
-			</Tabs>
+			<LibraryTabsComponent 
+				selectedListId={selectedListId}
+				activeTab={activeTab}
+				setActiveTab={setActiveTab}
+				mediaType={mediaType}
+				setMediaType={setMediaType}
+				userLists={userLists}
+				handleSelectChange={handleSelectChange}
+			/>
 
 			{error && (
 				<div className='w-full min-h-[50vh] flex justify-center items-center'>
@@ -355,46 +283,8 @@ export default function MyLibrary({session}: {session: Session | null}) {
 					<div className='flex gap-2 items-center mt-3'>
 						<label className='text-xl'>Sort by</label>
 
-						<Select
-							defaultValue='name'
-							onValueChange={value => setSortOption(value)}
-						>
-							<SelectTrigger className='w-fit cursor-pointer'>
-								<SelectValue placeholder='Sort by' />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem
-									className='cursor-pointer'
-									value='name'
-								>
-									Name
-								</SelectItem>
-								<SelectItem
-									className='cursor-pointer'
-									value='release_date'
-								>
-									Release date
-								</SelectItem>
-								<SelectItem
-									className='cursor-pointer'
-									value='watched_date'
-								>
-									Watched date
-								</SelectItem>
-								<SelectItem
-									className='cursor-pointer'
-									value='global_rating'
-								>
-									Global rating
-								</SelectItem>
-								<SelectItem
-									className='cursor-pointer'
-									value='user_rating'
-								>
-									My rating
-								</SelectItem>
-							</SelectContent>
-						</Select>
+						<LibrarySelectedList setSortOption={setSortOption} />
+						
 						<button
 							onClick={() =>
 								setSortOrder(prev =>

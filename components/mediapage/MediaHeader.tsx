@@ -1,28 +1,15 @@
 'use client'
-import Image from 'next/image'
-import { Button } from '@/components/ui/button'
 
-import { useEffect, useState, useRef } from 'react'
-import { CalendarIcon, EditIcon } from 'lucide-react'
-
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
-import { formatDate } from '@/lib/formatDate'
+import { useEffect, useState } from 'react'
 import { Session } from 'next-auth'
 
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from '@/components/ui/select'
-import ListMenuBlock from '../general/ListMenuBlock'
-import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
+const Link = dynamic(() => import('next/link'))
+const Image = dynamic(() => import('next/image'))
+const MediaHeaderSelect = dynamic(() => import('./MediaHeaderSelect'))
+const ListMenuBlock = dynamic(() => import('../general/ListMenuBlock'))
+const MediaCalendar = dynamic(() => import('./MediaCalendar'))
 
 type MediaProps = {
 	media: any
@@ -40,7 +27,11 @@ type MediaProps = {
 	handleClick: () => Promise<void>
 }
 
-export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) {
+export default function MediaPoster({
+	mediaProps,
+}: {
+	mediaProps: MediaProps
+}) {
 	const {
 		media,
 		session,
@@ -61,12 +52,11 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 
 	useEffect(() => {
 		// alert(isRefresh)
-		if(isRefresh) {
+		if (isRefresh) {
 			handleClick()
 		}
 	}, [isWatched, isFavorite, isWishlist, userRating, date])
 
-	
 	const [imagePath, setImagePath] = useState<string>('') // Храним путь к изображению
 
 	useEffect(() => {
@@ -85,10 +75,11 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 		return () => window.removeEventListener('resize', updateImagePath) // Убираем обработчик при размонтировании
 	}, [])
 
-
 	const getYears = () => {
 		const startYear = media.first_air_date?.split('-')[0] || ''
-		const endYear = !media.in_production ? media.last_air_date?.split('-')[0] : ''
+		const endYear = !media.in_production
+			? media.last_air_date?.split('-')[0]
+			: ''
 		return `${startYear}${endYear ? '-' + endYear : ''}`
 	}
 
@@ -99,7 +90,7 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 		const finalRes = `${hours ? `${hours}h ` : ''}${
 			mins ? `${mins}m` : ''
 		}`.trim()
-		return finalRes ? `(${finalRes})` : ""
+		return finalRes ? `(${finalRes})` : ''
 	}
 
 	return (
@@ -182,71 +173,17 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 											My rating:{' '}
 											{userRating && `${userRating} ⭐️`}
 										</label>
-										<Select
-											onValueChange={value => {
-												setIsRefresh(true)
-												setUserRating(Number(value))
-											}}
-										>
-											<SelectTrigger className='dark:!text-black w-fit bg-black !text-white !p-1 !h-fit cursor-pointer dark:bg-white/50 font-medium '>
-												{!userRating ||
-												userRating === -69 ? (
-													<SelectValue placeholder='Set rating' />
-												) : (
-													<EditIcon className=' h-4 w-4 dark:text-black text-white' />
-												)}
-											</SelectTrigger>
-											<SelectContent className='w-fit'>
-												{Array.from({ length: 10 }).map(
-													(_, i) => (
-														<SelectItem
-															key={i}
-															value={`${i + 1}`}
-														>
-															{i + 1}
-														</SelectItem>
-													)
-												)}
-											</SelectContent>
-										</Select>
+										<MediaHeaderSelect
+											setIsRefresh={setIsRefresh}
+											setUserRating={setUserRating}
+											userRating={userRating}
+										/>
 									</div>
-									<div className='flex gap-2 flex-wrap items-center mt-2'>
-										<label className='text-md font-medium '>
-											Date watched:{' '}
-											{date && formatDate(date)}
-										</label>
-										<Popover>
-											<PopoverTrigger asChild>
-												<Button
-													variant='default'
-													className='mt-[0px] w-fit justify-start text-left cursor-pointer h-auto !p-1'
-												>
-													{date ? (
-														<EditIcon className=' h-4 w-4' />
-													) : (
-														<>
-															<CalendarIcon className='h-4 w-4' />
-
-															<span className='dark:text-black text-white'>
-																Pick a date
-															</span>
-														</>
-													)}
-												</Button>
-											</PopoverTrigger>
-											<PopoverContent className='w-auto p-0'>
-												<Calendar
-													mode='single'
-													selected={date}
-													onSelect={date => {
-														setDate(date)
-														setIsRefresh(true)
-													}}
-													initialFocus
-												/>
-											</PopoverContent>
-										</Popover>
-									</div>
+									<MediaCalendar 
+										date={date}
+										setDate={setDate}
+										setIsRefresh={setIsRefresh}
+									/>
 								</div>
 							)}
 							<p className='italic text-gray-700 dark:text-gray-400 mt-2'>
@@ -283,7 +220,6 @@ export default function MediaPoster({ mediaProps }: { mediaProps: MediaProps }) 
 		</div>
 	)
 }
-
 
 function OverViewSection({ media }: { media: any }) {
 	return (

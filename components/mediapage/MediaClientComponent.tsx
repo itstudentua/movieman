@@ -1,11 +1,15 @@
 'use client'
 
 import { Session } from 'next-auth'
-import MediaHeader from './MediaHeader'
-import MediaCast from './MediaCast'
-import MediaCommentary from './MediaCommentary'
-import MediaRecommendation from './MediaRecommendations'
+
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
+
+const MediaHeader = dynamic(() => import('./MediaHeader'))
+const MediaCast = dynamic(() => import('./MediaCast'))
+const MediaCommentary = dynamic(() => import('./MediaCommentary'))
+const MediaRecommendations = dynamic(() => import('./MediaRecommendations'))
+
 
 export default function ShowClientComponent({
 	media,
@@ -157,7 +161,7 @@ console.log(media);
 					/>
 
 					{media?.recommendations?.results.length > 0 && (
-						<MediaRecommendation
+						<MediaRecommendations
 							recommendation={media?.recommendations?.results}
 							type='media'
 						/>

@@ -1,21 +1,27 @@
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuCheckboxItem,
-	DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Plus, Heart, Bookmark, Eye } from 'lucide-react'
+import { Heart, Bookmark, Eye } from 'lucide-react'
+
 import {
 	Tooltip,
 	TooltipContent,
 	TooltipTrigger,
 } from '@/components/ui/tooltip'
+
 import { Button } from '@/components/ui/button'
 import { useState, useEffect } from 'react'
-import { CreateListDialog } from '@/components/general/CreateListDialog'
 import { useSession } from 'next-auth/react'
 import useSWR from 'swr'
 import { mutate } from 'swr'
+import dynamic from 'next/dynamic'
+
+const CreateListDialog = dynamic(
+	async () => {
+		const mod = await import('@/components/general/CreateListDialog')
+		return { default: mod.CreateListDialog }
+	},
+	{ ssr: false }
+)
+
+import DropdownListMenu from './DropdownListMenu'
 
 type ListBlockProps = {
 	mediaId?: number
@@ -33,9 +39,7 @@ type ListBlockProps = {
 	setIsActive?: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-
 const fetcher = (url: string) => fetch(url).then(res => res.json())
-
 
 export default function ListMenuBlock({
 	mediaId = -10,
@@ -50,7 +54,7 @@ export default function ListMenuBlock({
 	addUserMedia = async () => {},
 	handleListCreated = async () => {},
 	setIsPaused = () => {},
-	setIsActive = () => {}
+	setIsActive = () => {},
 }: ListBlockProps) {
 	const [dialogOpen, setDialogOpen] = useState(false)
 	const [menuOpen, setMenuOpen] = useState(false)
@@ -59,7 +63,6 @@ export default function ListMenuBlock({
 	// function to get lists of user
 	const {
 		data: userLists,
-		error: userListsError,
 		isLoading: userListsLoading,
 	} = useSWR(`/api/lists/get?userId=${session?.user.id}`, fetcher, {
 		revalidateOnFocus: true,
@@ -72,28 +75,23 @@ export default function ListMenuBlock({
 			body: JSON.stringify({ listId, mediaId }),
 		})
 
-		
 		addUserMedia() // add to usermedia
 		handleListCreated()
 		await mutate(`/api/lists/get?userId=${session?.user.id}`)
 		await mutate(`/api/db`)
-
 	}
 
 	async function listMutate() {
 		await mutate(`/api/lists/get?userId=${session?.user.id}`)
 		await mutate(`/api/db`)
 	}
-	
 
 	useEffect(() => {
 		menuOpen ? setIsActive(true) : setIsActive(false)
 		menuOpen && setIsPaused(menuOpen)
 	}, [menuOpen])
 
-	if (
-		userListsLoading
-	)
+	if (userListsLoading)
 		return (
 			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
 				<span className='text-white text-xl animate-pulse'>
@@ -124,54 +122,15 @@ export default function ListMenuBlock({
 					</TooltipContent>
 				</Tooltip>
 			)}
-			<DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
-				<Tooltip>
-					<TooltipTrigger asChild>
-						<DropdownMenuTrigger asChild>
-							<Button
-								onClick={() => setIsRefresh(true)}
-								variant='myStyle'
-								size='icon'
-							>
-								<Plus className='w-5 h-5' />
-							</Button>
-						</DropdownMenuTrigger>
-					</TooltipTrigger>
-					<TooltipContent>Add to List</TooltipContent>
-				</Tooltip>
-
-				<DropdownMenuContent
-					align='end'
-					className='bg-white dark:bg-black truncate'
-					// onMouseEnter={() => setIsPaused(true)}
-					// onMouseLeave={() => setIsPaused(false)}
-				>
-					{userLists.map((listItem: any) => (
-						<DropdownMenuCheckboxItem
-							key={listItem.id}
-							checked={listItem.items?.some(
-								(item: any) => item.mediaId === mediaId
-							)}
-							className='text-sm font-semibold sm:font-normal cursor-pointer'
-							onClick={() => handleToggle(listItem.id, mediaId)}
-						>
-							{listItem?.name}
-						</DropdownMenuCheckboxItem>
-					))}
-					<Button
-						onClick={() => {
-							setMenuOpen(false) // Закрываем меню
-							setTimeout(() => {
-								setDialogOpen(true) // И только потом открываем диалог
-							}, 50) // Короткая задержка — чтобы React успел убрать меню
-						}}
-						className='mt-3 cursor-pointer w-full'
-					>
-						Create new list
-					</Button>
-				</DropdownMenuContent>
-			</DropdownMenu>
-
+			<DropdownListMenu 
+				setIsRefresh={setIsRefresh}
+				mediaId={mediaId}
+				userLists={userLists}
+				menuOpen={menuOpen}
+				setMenuOpen={setMenuOpen} 
+				handleToggle={handleToggle}
+				setDialogOpen={setDialogOpen} />
+			
 			<CreateListDialog
 				open={dialogOpen}
 				setOpen={setDialogOpen}
