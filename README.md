@@ -8,6 +8,9 @@
 - TMDB API
 
 
+npx prisma migrate dev --name init
+
+
 docker-compose build --no-cache
 docker-compose up
 or
