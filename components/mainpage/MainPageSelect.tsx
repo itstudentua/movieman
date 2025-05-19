@@ -18,7 +18,7 @@ export default function MainPageSelect({category, setCategory, setIndex, resetAu
 		<Select
 			value={category}
 			onValueChange={val => {
-				setCategory(val as any)
+				setCategory(val as 'trending' | 'topRated' | 'upcoming')
 				setIndex(0)
 				resetAutoSlide()
 			}}

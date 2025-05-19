@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 
-export default function PersonBiography({biography} : { biography: any}) {
+export default function PersonBiography({biography} : { biography: string}) {
     
     const [expanded, setExpanded] = useState(false)
     return (

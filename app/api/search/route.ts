@@ -1,11 +1,6 @@
 import { NextResponse } from 'next/server'
 
-interface CastMember {
-	id: number
-	name: string
-	character: string
-	profile_path: string | null
-}
+import { MediaItem, CastMember } from '@/lib/movieTypes'
 
 export async function GET(req: Request) {
 	const { searchParams } = new URL(req.url)
@@ -31,7 +26,7 @@ export async function GET(req: Request) {
 		}
 
 		const details = await Promise.all(
-			data.results.map(async (item: any) => {
+			data.results.map(async (item: MediaItem) => {
 				if (item.media_type === 'movie') {
 					// Подробности о фильме
 					const movieRes = await fetch(
@@ -46,12 +41,14 @@ export async function GET(req: Request) {
 					const creditsData = await creditsRes.json()
 
 					const cast: CastMember[] =
-						creditsData.cast?.slice(0, 5).map((actor: any) => ({
-							id: actor.id,
-							name: actor.name,
-							character: actor.character,
-							profile_path: actor.profile_path,
-						})) || []
+						creditsData.cast
+							?.slice(0, 5)
+							.map((actor: CastMember) => ({
+								id: actor.id,
+								name: actor.name,
+								character: actor.character,
+								profile_path: actor.profile_path,
+							})) || []
 
 					return {
 						...item,
@@ -75,12 +72,14 @@ export async function GET(req: Request) {
 					const creditsData = await creditsRes.json()
 
 					const cast: CastMember[] =
-						creditsData.cast?.slice(0, 5).map((actor: any) => ({
-							id: actor.id,
-							name: actor.name,
-							character: actor.character,
-							profile_path: actor.profile_path,
-						})) || []
+						creditsData.cast
+							?.slice(0, 5)
+							.map((actor: CastMember) => ({
+								id: actor.id,
+								name: actor.name,
+								character: actor.character,
+								profile_path: actor.profile_path,
+							})) || []
 
 					return {
 						...item,
@@ -96,7 +95,7 @@ export async function GET(req: Request) {
 					// Просто возвращаем информацию о человеке
 					return {
 						...item,
-					    poster_path: item.profile_path,
+						poster_path: item.profile_path,
 						name: item.name,
 						known_for: item.known_for,
 					}

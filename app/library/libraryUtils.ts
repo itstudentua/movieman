@@ -1,4 +1,7 @@
-export function filterMediaByTab(data: any[], mediaType: string, activeTab: string) {
+import { CommonMedia } from '@/lib/movieTypes'
+
+
+export function filterMediaByTab(data: CommonMedia[], mediaType: string, activeTab: string) {
 	return data.filter(obj => {
 		if (obj.type !== mediaType) return false
 
@@ -16,7 +19,7 @@ export function filterMediaByTab(data: any[], mediaType: string, activeTab: stri
 }
 
 export function sortMedia(
-	media: any[],
+	media: CommonMedia[],
 	sortOption: string,
 	sortOrder: 'asc' | 'desc'
 ) {

@@ -110,15 +110,20 @@ export const getPerson = async (id: string) => {
 			popularity: person.popularity,
 			gender: person.gender,
 			movies: credits.cast
-				.filter((item: any) => item.media_type === 'movie')
+				.filter(
+					(item: { media_type: string }) =>
+						item.media_type === 'movie'
+				)
 				.sort(
-					(a: any, b: any) =>
+					(a: { popularity: number }, b: { popularity: number }) =>
 						(b.popularity || 0) - (a.popularity || 0)
 				),
 			tvShows: credits.cast
-				.filter((item: any) => item.media_type === 'tv')
+				.filter(
+					(item: { media_type: string }) => item.media_type === 'tv'
+				)
 				.sort(
-					(a: any, b: any) =>
+					(a: { popularity: number }, b: { popularity: number }) =>
 						(b.popularity || 0) - (a.popularity || 0)
 				),
 			crew: credits.crew,
@@ -149,7 +154,7 @@ export async function getPopularMovies(
 	if (!res.ok) throw new Error('Ошибка при загрузке фильмов')
 	const data = await res.json()
 	if (endpoint === '/movie/upcoming') 	return data.results.filter(
-		(movie: any) => new Date(movie.release_date).getTime() > Date.now()
+		(movie: {release_date: Date}) => new Date(movie.release_date).getTime() > Date.now()
 	)
 	return data.results
 

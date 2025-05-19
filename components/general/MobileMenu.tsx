@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { MobileMenuButton } from './MobileMenuButton'
 import Link from 'next/link'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTheme } from 'next-themes'
 
-interface Props {
+type Props = {
 	toggle: () => void
 	clearInput: () => void
 	isOpen: boolean

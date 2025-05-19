@@ -87,9 +87,10 @@ export default function ListMenuBlock({
 	}
 
 	useEffect(() => {
-		menuOpen ? setIsActive(true) : setIsActive(false)
-		menuOpen && setIsPaused(menuOpen)
-	}, [menuOpen])
+		setIsActive(menuOpen)
+		if (menuOpen) setIsPaused(true)
+	}, [menuOpen, setIsActive, setIsPaused])
+	
 
 	if (userListsLoading)
 		return (

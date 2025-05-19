@@ -5,6 +5,7 @@ import { getPerson } from '@/utils/api' // Твоя функция для зап
 import MediaRecommendation from '@/components/mediapage/MediaRecommendations'
 import { formatPersonDates } from '@/lib/formatDate'
 import PersonBiography from '@/app/people/Bigraphy'
+import Image from 'next/image'
 
 type Params = Promise<{ id: string }>
 
@@ -37,11 +38,13 @@ const PersonPage = async ({ params }: { params: Params }) => {
 		<div className='px-3 sm:px-10 max-w-7xl mx-auto mobile-header'>
 			<div className='mt-5 sm:mt-10 flex gap-5'>
 				{person.profile_path && (
-					<div className='relative hidden sm:block w-[250px] aspect-[2/3] flex-shrink-0'>
-						<img
-							src={`https://image.tmdb.org/t/0p/w500${person.profile_path}`}
+					<div className='relative hidden sm:block flex-shrink-0'>
+						<Image
+							src={`https://image.tmdb.org/t/p/w500${person.profile_path}`}
 							alt={person.name}
-							className='rounded shadow-lg'
+							height={300}
+							width={200}
+							className='rounded-lg'
 						/>
 					</div>
 				)}
@@ -53,10 +56,12 @@ const PersonPage = async ({ params }: { params: Params }) => {
 							: person.known_for_department}
 					</p>
 					<div className='relative block sm:hidden w-[250px] aspect-[2/3] flex-shrink-0 mt-3 mb-4'>
-						<img
+						<Image
 							src={`https://image.tmdb.org/t/p/w500${person.profile_path}`}
 							alt={person.name}
-							className='rounded shadow-lg'
+							height={300}
+							width={200}
+							className='rounded-lg'
 						/>
 					</div>
 					{person.birthday && (

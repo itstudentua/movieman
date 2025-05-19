@@ -1,25 +1,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
-
-interface RecommendationItem {
-	id: number
-	name?: string
-	original_title?: string
-	backdrop_path: string | null
-	vote_average: number
-	first_air_date?: string
-	release_date?: string
-	media_type: 'movie' | 'tv'
-	character?: string
-	type: string
-}
+import { CommonMedia } from '@/lib/movieTypes'
 
 export default function MediaRecommendation({
 	recommendation,
 	type = 'media',
 	mediaType = 'Media',
 }: {
-	recommendation: RecommendationItem[]
+	recommendation: CommonMedia[]
 	type: string
 	mediaType?: string
 }) {
@@ -35,7 +23,7 @@ export default function MediaRecommendation({
 						new Map(
 							recommendation.map(item => [item.id, item])
 						).values()
-					).map((rec: RecommendationItem) => {
+					).map((rec: CommonMedia) => {
 						const title =
 							rec.media_type === 'movie'
 								? rec.original_title
@@ -88,7 +76,7 @@ export default function MediaRecommendation({
 									{rec.vote_average !== 0 && (
 										<p className='text-xs'>
 											Rating:{' '}
-											{rec.vote_average.toFixed(1)} ⭐️
+											{rec?.vote_average?.toFixed(1)} ⭐️
 										</p>
 									)}
 									{rec?.character && (

@@ -11,8 +11,10 @@ const MediaHeaderSelect = dynamic(() => import('./MediaHeaderSelect'))
 const ListMenuBlock = dynamic(() => import('../general/ListMenuBlock'))
 const MediaCalendar = dynamic(() => import('./MediaCalendar'))
 
+import { CommonMedia } from '@/lib/movieTypes'
+
 type MediaProps = {
-	media: any
+	media: CommonMedia
 	session: Session | null
 	date: Date | undefined
 	setDate: (date: Date | undefined) => void
@@ -66,14 +68,16 @@ export default function MediaPoster({
 			const newImagePath = isWide
 				? media.backdrop_path
 				: media.images?.posters?.[1]?.file_path || media.backdrop_path
-			setImagePath(newImagePath) // Обновляем состояние
+			if(newImagePath) {
+				setImagePath(newImagePath) // Обновляем состояние
+			}
 		}
 
 		updateImagePath() // Вызываем сразу для начальной установки
 
 		window.addEventListener('resize', updateImagePath) // Обновляем при изменении размера экрана
 		return () => window.removeEventListener('resize', updateImagePath) // Убираем обработчик при размонтировании
-	}, [])
+	}, [media.backdrop_path, media.images?.posters])
 
 	const getYears = () => {
 		const startYear = media.first_air_date?.split('-')[0] || ''
@@ -93,6 +97,12 @@ export default function MediaPoster({
 		return finalRes ? `(${finalRes})` : ''
 	}
 
+	const dateStr = media?.release_date || media?.first_air_date
+	const watchedButton = Boolean(
+		dateStr && new Date(dateStr).getTime() < Date.now()
+	)
+
+
 	return (
 		<div
 			className='w-full bg-no-repeat bg-cover'
@@ -109,7 +119,10 @@ export default function MediaPoster({
 							<div className='relative hidden md:block w-[300px] aspect-[2/3] flex-shrink-0'>
 								<Image
 									src={`https://image.tmdb.org/t/p/w500${media.poster_path}`}
-									alt={media.name || media.title}
+									alt={
+										(media.name as string) ||
+										(media.title as string)
+									}
 									fill
 									sizes='(max-width: 768px) 200px auto, (max-width: 1200px) 300px auto'
 									className='object-cover rounded-lg shadow-2xl'
@@ -129,7 +142,7 @@ export default function MediaPoster({
 							<p className='text-lg text-gray-700 dark:text-gray-400'>
 								{media?.media_type === 'tv'
 									? getYears()
-									: media?.release_date.split('-')[0] || ''}
+									: media?.release_date?.split('-')[0] || ''}
 							</p>
 							<p className='text-lg text-gray-900 dark:text-gray-500'>
 								{media?.genres
@@ -142,7 +155,10 @@ export default function MediaPoster({
 								<div className='my-3 relative block md:hidden w-[80%] aspect-[2/3] flex-shrink-0'>
 									<Image
 										src={`https://image.tmdb.org/t/p/w500${media.poster_path}`}
-										alt={media.name || media.title}
+										alt={
+											(media.name as string) ||
+											(media.title as string)
+										}
 										fill
 										sizes='(max-width: 768px) 200px, (max-width: 1200px) 250px, 300px'
 										className='object-cover rounded-lg shadow-2xl'
@@ -152,10 +168,15 @@ export default function MediaPoster({
 							)}
 							<p className='text-gray-700 dark:text-gray-400 text-lg'>
 								{media?.origin_country
-									.map((item: any) => item)
+									?.map((item: string) => item)
 									.join(', ')}
+								{/* {media?.media_type === 'tv'
+									? media?.number_of_seasons?.length === 1
+										? `, ${media?.number_of_seasons} season, ${media?.number_of_episodes} episodes`
+										: `, ${media?.number_of_seasons} seasons, ${media?.number_of_episodes} episodes`
+									: null} */}
 								{media?.media_type === 'tv'
-									? media?.number_of_seasons.length === 1
+									? media?.number_of_seasons === 1
 										? `, ${media?.number_of_seasons} season, ${media?.number_of_episodes} episodes`
 										: `, ${media?.number_of_seasons} seasons, ${media?.number_of_episodes} episodes`
 									: null}
@@ -163,7 +184,7 @@ export default function MediaPoster({
 							{media?.vote_average !== 0 && (
 								<p>
 									Global Rating:{' '}
-									{media?.vote_average.toFixed(1)} ⭐️
+									{media?.vote_average?.toFixed(1)} ⭐️
 								</p>
 							)}
 							{session?.user && isWatched && (
@@ -179,7 +200,7 @@ export default function MediaPoster({
 											userRating={userRating}
 										/>
 									</div>
-									<MediaCalendar 
+									<MediaCalendar
 										date={date}
 										setDate={setDate}
 										setIsRefresh={setIsRefresh}
@@ -194,12 +215,7 @@ export default function MediaPoster({
 								<ListMenuBlock
 									mediaId={media.id}
 									setIsRefresh={setIsRefresh}
-									watchedButton={
-										new Date(
-											media.release_date ||
-												media.first_air_date
-										).getTime() < Date.now()
-									}
+									watchedButton={watchedButton}
 									addUserMedia={handleClick}
 									isWatched={isWatched}
 									isFavorite={isFavorite}
@@ -221,22 +237,24 @@ export default function MediaPoster({
 	)
 }
 
-function OverViewSection({ media }: { media: any }) {
+
+function OverViewSection({ media }: { media: CommonMedia }) {
 	return (
 		<>
 			<h3 className='mt-3 mb-1 text-xl font-semibold'>Overview</h3>
-			<p className=''>{media.overview}</p>
+			<p>{media.overview}</p>
+
 			<div className='mt-5'>
 				<ul className='flex gap-5 flex-wrap'>
-					{media?.media_type === 'tv' &&
-						media?.created_by?.slice(0, 3).map((creator: any) => (
+					{media.media_type === 'tv' &&
+						media.created_by?.slice(0, 3).map(creator => (
 							<li
-								key={creator?.id}
+								key={creator.id}
 								className='dark:text-gray-400 text-gray-800 text-sm'
 							>
-								<Link href={`/people/${creator?.id}`}>
+								<Link href={`/people/${creator.id}`}>
 									<span className='text-xl text-black dark:text-white font-semibold'>
-										{creator?.name}
+										{creator.name}
 									</span>
 								</Link>
 								<br />
@@ -244,28 +262,27 @@ function OverViewSection({ media }: { media: any }) {
 							</li>
 						))}
 
-					{media?.media_type === 'movie' &&
-						media?.credits?.crew
-							?.filter((person: any) =>
+					{media.media_type === 'movie' &&
+						media.credits?.crew
+							?.filter(person =>
 								['Director', 'Writer', 'Screenplay'].includes(
 									person.job
 								)
 							)
 							.slice(0, 3)
-							.map((person: any) => (
+							.map(person => (
 								<li
-									key={person?.id + person?.job}
+									key={person.id + person.job}
 									className='dark:text-gray-400 text-gray-800 text-sm'
 								>
 									<Link href={`/people/${person.id}`}>
 										<span className='text-xl text-black dark:text-white font-semibold'>
-											{person?.name}
+											{person.name}
 										</span>
 									</Link>
 									<br />
-									{/* Объединяем 'Writer' и 'Screenplay' в одну роль */}
-									{person.job === 'Screenplay' ||
-									person.job === 'Writer'
+									{person.job === 'Writer' ||
+									person.job === 'Screenplay'
 										? 'Writer'
 										: person.job}
 								</li>

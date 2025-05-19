@@ -29,12 +29,6 @@ export default function UserDropdownMenu({session, setIsOpen}: {session: Session
 			</DropdownMenuTrigger>
 
 			<DropdownMenuContent align='end' className='bg-white dark:bg-black'>
-				<DropdownMenuItem
-					className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer'
-					onClick={() => alert('Профиль')}
-				>
-					Profile
-				</DropdownMenuItem>
 
 				<DropdownMenuItem asChild>
 					<Link

@@ -13,15 +13,23 @@ import {
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 
-type DropdownListMenuProps = {
-    mediaId: number
-    userLists: any[]
-    menuOpen: boolean
-    setMenuOpen: (open: boolean) => void
-    setDialogOpen: (open: boolean) => void
-    setIsRefresh: (refresh: boolean) => void
-    handleToggle: (listId: string, mediaId: number) => Promise<void>
+type DropdownListMenuItem = {
+	id: string
+	name: string
+	items:{
+		mediaId: number
+	} []
 
+}
+
+type DropdownListMenuProps = {
+	mediaId: number
+	userLists: DropdownListMenuItem[]
+	menuOpen: boolean
+	setMenuOpen: (open: boolean) => void
+	setDialogOpen: (open: boolean) => void
+	setIsRefresh: (refresh: boolean) => void
+	handleToggle: (listId: string, mediaId: number) => Promise<void>
 }
 
 export default function DropdownListMenu({mediaId, setDialogOpen, userLists, menuOpen, setMenuOpen, setIsRefresh, handleToggle}: DropdownListMenuProps) {
@@ -48,11 +56,11 @@ export default function DropdownListMenu({mediaId, setDialogOpen, userLists, men
 				// onMouseEnter={() => setIsPaused(true)}
 				// onMouseLeave={() => setIsPaused(false)}
 			>
-				{userLists.map((listItem: any) => (
+				{userLists.length > 0 && userLists.map((listItem: DropdownListMenuItem) => (
 					<DropdownMenuCheckboxItem
 						key={listItem.id}
 						checked={listItem.items?.some(
-							(item: any) => item.mediaId === mediaId
+							(item: {mediaId: number}) => item.mediaId === mediaId
 						)}
 						className='text-sm font-semibold sm:font-normal cursor-pointer'
 						onClick={() => handleToggle(listItem.id, mediaId)}

@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 
-interface Props {
+type Props = {
 	isOpen: boolean
 	toggle: () => void
 }

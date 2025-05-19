@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/input'
 import { Pencil } from 'lucide-react'
 import { useState } from 'react'
 
-interface EditListDialogProps {
+type EditListDialogProps = {
 	currentName: string
 	onSave: (newName: string) => Promise<void>
 }

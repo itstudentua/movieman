@@ -10,12 +10,13 @@ const MediaCast = dynamic(() => import('./MediaCast'))
 const MediaCommentary = dynamic(() => import('./MediaCommentary'))
 const MediaRecommendations = dynamic(() => import('./MediaRecommendations'))
 
+import { CommonMedia } from '@/lib/movieTypes'
 
 export default function ShowClientComponent({
 	media,
 	session,
 }: {
-	media: any
+	media: CommonMedia
 	session: Session | null
 }) {
 	const [date, setDate] = useState<Date | undefined>()
@@ -37,7 +38,7 @@ export default function ShowClientComponent({
 				const data = await res.json()
 
 				const filtered = data.filter(
-					(item: any) =>
+					(item: { userId: string; mediaId: number }) =>
 						item.userId === session?.user?.id &&
 						item.mediaId === media.id
 				)
@@ -66,7 +67,7 @@ export default function ShowClientComponent({
 		return () => {
 			isMounted = false
 		}
-	}, [session?.user?.id, media.id])
+	}, [session?.user?.id, media.id, media?.media_type])
 
 
 	const handleClick = async () => {
@@ -146,12 +147,13 @@ console.log(media);
 				<MediaHeader mediaProps={mediaProps} />
 
 				<div className='px-3 sm:px-10 max-w-7xl mx-auto mt-5 pb-10'>
-					{media?.credits?.cast.length > 0 && (
-						<MediaCast
-							cast={media?.credits?.cast}
-							mediaType={media.media_type}
-						/>
-					)}
+					{Array.isArray(media?.credits?.cast) &&
+						media.credits.cast.length > 0 && (
+							<MediaCast
+								cast={media.credits.cast}
+								mediaType={media.media_type as string}
+							/>
+						)}
 
 					<MediaCommentary
 						userComment={userComment}
@@ -160,13 +162,13 @@ console.log(media);
 						isWatched={isWatched}
 					/>
 
-					{media?.recommendations?.results.length > 0 && (
-						<MediaRecommendations
-							recommendation={media?.recommendations?.results}
-							type='media'
-						/>
-					)}
-					
+					{Array.isArray(media?.recommendations?.results) &&
+						media.recommendations.results.length > 0 && (
+							<MediaRecommendations
+								recommendation={media.recommendations.results}
+								type='media'
+							/>
+						)}
 				</div>
 			</div>
 		</>

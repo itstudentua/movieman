@@ -8,9 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useEffect, useState } from 'react'
 import ListMenuBlock from '@/components/general/ListMenuBlock'
 import { UserMedia } from '@prisma/client'
-import { formatDate } from 'lib/formatDate'
 import { useSession } from 'next-auth/react'
-import { usePathname } from 'next/navigation'
 import {
 	Select,
 	SelectContent,
@@ -21,8 +19,8 @@ import {
 import { ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { sortMedia, filterMediaByTab } from '../library/libraryUtils'
 import { useSearchParams } from 'next/navigation'
-
-import { toast } from 'sonner'
+import { CommonMedia } from '@/lib/movieTypes'
+import Image from 'next/image'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
@@ -33,19 +31,17 @@ export default function ShareListComponent() {
 	const userId = searchParams.get('userId')
 	const listId = searchParams.get('listId')
 
-	if (!userId || !listId) return <p>Not found</p>
-
 	const [sortOption, setSortOption] = useState<string>('name')
 	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 	const { data: session } = useSession()
 	const [userName, setUserName] = useState('')
 	const [isLoadingUser, setIsLoadingUser] = useState(false)
 
-
-	
 	useEffect(() => {
 		const fetchUser = async () => {
-			if (!userId) return
+			if (!userId) {
+				return
+			}
 			setIsLoadingUser(true)
 			const res = await fetch(`/api/get-user?id=${userId}`)
 			const data = await res.json()
@@ -57,35 +53,25 @@ export default function ShareListComponent() {
 	}, [userId])
 
 	// function to get media from list
+	const { data: shareListData, isLoading: isLoadingList } = useSWR(
+		listId !== 'watched' && listId !== 'favorite' && listId !== 'wishlist'
+			? `/api/lists/get-media?userId=${userId}&listId=${listId}`
+			: `/api/db?userId=${userId}&listType=${listId}`,
+		fetcher,
+		{
+			revalidateOnFocus: true,
+		}
+	)
+
 	const {
-		data: shareListData,
-		error: userListsMediaError,
-		isLoading: isLoadingList,
-	} = useSWR(
-		(listId !== 'watched' && listId !=='favorite' && listId !== 'wishlist') ? `/api/lists/get-media?userId=${userId}&listId=${listId}` : `/api/db?userId=${userId}&listType=${listId}`,
-		fetcher,
-		{
-			revalidateOnFocus: true,
-		}
-	)
-
-	
-
-    const {
 		data: getUserLists,
-		error: userListsError,
 		isLoading: isLoadingUserList,
-	} = useSWR(
-		`/api/lists/get?userId=${userId}`,
-		fetcher,
-		{
-			revalidateOnFocus: true,
-		}
-	)
+	} = useSWR(`/api/lists/get?userId=${userId}`, fetcher, {
+		revalidateOnFocus: true,
+	})
 
 	const {
 		data: userData,
-		error,
 		isLoading,
 	} = useSWR(`/api/db`, fetcher, {
 		revalidateOnFocus: true,
@@ -102,10 +88,10 @@ export default function ShareListComponent() {
 	}
 
 	// медиа юзера, который авторизован
-	function getUserData(item: any) {
+	function getUserData(item: CommonMedia) {
 		if (!userData) return null
 		const res = userData.find(
-			(userItem: any) => userItem.mediaId === item.mediaId
+			(userItem: CommonMedia) => userItem.mediaId === item.mediaId
 		)
 		return res
 	}
@@ -120,19 +106,19 @@ export default function ShareListComponent() {
 		})
 
 		await mutate(`/api/db`)
-		await mutate(
-			`/api/lists/get-media?userId=${userId}&listId=${listId}`
-		)
+		await mutate(`/api/lists/get-media?userId=${userId}&listId=${listId}`)
 	}
 
-    const handleListRemove = async () => {
+	const handleListRemove = async () => {
 		await mutate(`/api/db`)
 		await mutate(`/api/lists/get?userId=${userId}`)
-		await mutate(
-			`/api/lists/get-media?userId=${userId}&listId=${listId}`
-		)
+		await mutate(`/api/lists/get-media?userId=${userId}&listId=${listId}`)
 	}
 
+
+	if (!userId || !listId) {
+		return <p>Not found</p>
+	}
 
 	if (isLoadingList || isLoadingUserList || isLoading || isLoadingUser)
 		return (
@@ -155,16 +141,19 @@ export default function ShareListComponent() {
 				<>
 					<div className='flex flex-col gap-2 mt-1'>
 						<p className='text-xl sm:text-2xl font-semibold text-gray-300'>
-							{userName}'s{' '}
+							{`${userName}'s`}{' '}
 							{(listId === 'watched' ||
 								listId === 'favorite' ||
-								listId === 'wishlist') && listId} {'  '}
+								listId === 'wishlist') &&
+								listId}{' '}
+							{'  '}
 							list
 						</p>
 						<h2 className='text-2xl sm:text-3xl font-semibold'>
 							{getUserLists &&
 								getUserLists.find(
-									(list: any) => list.id === listId
+									(list: { id: number }) =>
+										String(list.id) === listId
 								)?.name}
 							<span className='font-semibold text-gray-400 text-xl'>
 								{shareListData.length === 1
@@ -261,7 +250,7 @@ export default function ShareListComponent() {
 					</p>
 					<div className='mt-5 flex flex-col gap-5'>
 						{sortMedia(getData(), sortOption, sortOrder).map(
-							(item: any) => (
+							(item: CommonMedia) => (
 								<div
 									key={item.id}
 									className='w-full flex gap-5 border-b pb-5 rounded items-center flex-wrap sm:flex-nowrap'
@@ -276,10 +265,17 @@ export default function ShareListComponent() {
 													: 'movie'
 											}/${item.mediaId}`}
 										>
-											<img
+											{/* <img
 												src={`https://image.tmdb.org/t/p/w500${item.poster}`}
 												alt={item.title}
 												className='h-40 rounded-xl'
+											/> */}
+											<Image
+												src={`https://image.tmdb.org/t/p/w500${item.poster}`}
+												alt={item.title as string}
+												height={160}
+												width={195}
+												className='rounded-lg'
 											/>
 										</Link>
 									)}
@@ -316,10 +312,17 @@ export default function ShareListComponent() {
 														: 'movie'
 												}/${item.mediaId}`}
 											>
-												<img
+												{/* <img
 													src={`https://image.tmdb.org/t/p/w500${item.poster}`}
 													alt={item.title}
 													className='h-40 rounded-xl'
+												/> */}
+												<Image
+													src={`https://image.tmdb.org/t/p/w500${item.poster}`}
+													alt={item.title as string}
+													height={160}
+													width={195}
+													className='rounded-lg'
 												/>
 											</Link>
 										)}
@@ -331,7 +334,7 @@ export default function ShareListComponent() {
 										)}
 										{item.userRating && (
 											<p>
-												{userName}'s Rating:{' '}
+												{`${userName}'s Rating:`}{' '}
 												{item.userRating} ⭐️
 											</p>
 										)}
@@ -364,7 +367,8 @@ export default function ShareListComponent() {
 													userData = {
 														...item,
 														userComment: null,
-														userId: session.user.id,
+														userId: session?.user
+															?.id,
 														userRating: null,
 														watchedDate: null,
 														isFavorite: false,

@@ -12,7 +12,7 @@ import {
 import { Trash } from 'lucide-react'
 
 
-interface DeleteListDialogProps {
+type DeleteListDialogProps = {
 	selectedListName: string
 	selectedListId: string
 	handleListDelete: (listId: string) => Promise<void>

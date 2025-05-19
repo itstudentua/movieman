@@ -1,6 +1,10 @@
-import { notFound } from 'next/navigation'
 import ShareListComponent from './ShareListComponent'
+import { Suspense } from 'react'
 
 export default async function ShareListPage() {
-	return <ShareListComponent />
+	return (
+		<Suspense>
+			<ShareListComponent />
+		</Suspense>
+	)
 }

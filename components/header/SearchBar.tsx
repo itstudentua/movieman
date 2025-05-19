@@ -5,8 +5,9 @@ import { X } from 'lucide-react'
 import { useTransition } from 'react'
 import ResultList from './ResultList'
 import { motion } from 'framer-motion'
+import { CommonMedia } from '@/lib/movieTypes'
 
-interface Props {
+type Props = {
 	mobileMenu: boolean
 	inputValue: string
 	setInputValue: (value: string) => void
@@ -21,10 +22,11 @@ const SearchBar = ({
 	showMobileInputSearch,
 	setShowMobileInputSearch,
 }: Props) => {
-	const [results, setResults] = useState<any[]>([])
+	const [results, setResults] = useState<CommonMedia[]>([])
 	const [isOpen, setIsOpen] = useState(false)
 	const [highlightedIndex, setHighlightedIndex] = useState(-1)
 	const listRef = useRef<HTMLUListElement | null>(null)
+	const [isLoading, setIsLoading] = useState(false)
 
 	const router = useRouter()
 
@@ -48,17 +50,20 @@ const SearchBar = ({
 		return () => {
 			window.removeEventListener('resize', handleResize)
 		}
-	}, [])
+	}, [setShowMobileInputSearch])
 
 	// Функция для получения фильмов с TMDb
 	const fetchMovies = async (query: string) => {
 		try {
+			setIsLoading(true)
 			const response = await axios.get(`/api/search?query=${query}`)
 			setResults(response.data.results)
 			setIsOpen(true)
 		} catch (error) {
-			console.error('Ошибка при получении данных с API:', error)
+			console.error('API error:', error)
+			setIsLoading(false)
 		}
+		setIsLoading(false)
 	}
 
 	// Обработчик изменения текста
@@ -75,8 +80,8 @@ const SearchBar = ({
 	}
 
 	// Обработчик выбора элемента
-	const handleSelect = (item: any) => {
-		setInputValue(item?.title || item?.name)
+	const handleSelect = (item: CommonMedia) => {
+		setInputValue((item?.title as string) || (item?.name as string))
 		setIsOpen(false)
 		setShowMobileInputSearch(false)
 		setInputValue('')
@@ -89,7 +94,9 @@ const SearchBar = ({
 					? 'show'
 					: 'movie'
 
-			const slug = `/${pageType}/${item.id}-${(item.title || item.name)
+			const slug = `/${pageType}/${item.id}-${(
+				(item.title as string) || (item.name as string)
+			)
 				.replace(/\s+/g, '-')
 				.toLowerCase()}`
 
@@ -136,14 +143,6 @@ const SearchBar = ({
 
 	return (
 		<>
-			{isPending && (
-				<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
-					<span className='text-white text-xl animate-pulse'>
-						Loading...
-					</span>
-				</div>
-			)}
-
 			{showMobileInputSearch ? (
 				<motion.div
 					initial={{ scaleX: 0, opacity: 0 }}
@@ -170,7 +169,22 @@ const SearchBar = ({
 					>
 						<X size={24} />
 					</button>
-					{isOpen && results.length > 0 && (
+					{isLoading && (
+						<div
+							className={`absolute flex justify-center items-center left-0 ${
+								showMobileInputSearch ? 'top-15' : ''
+							} z-10 w-full bg-white dark:bg-black border mt-1 rounded-md shadow ${
+								showMobileInputSearch
+									? 'h-[10dvh]'
+									: 'h-[10dvh]'
+							}`}
+						>
+							<span className='text-white text-xl animate-pulse'>
+								Loading...
+							</span>
+						</div>
+					)}
+					{!isLoading && isOpen && results.length > 0 && (
 						<ResultList
 							listRef={listRef}
 							setIsOpen={setIsOpen}
@@ -209,7 +223,22 @@ const SearchBar = ({
 							)}
 						</div>
 					</div>
-					{isOpen && results.length > 0 && (
+					{isLoading && (
+						<div
+							className={`absolute flex justify-center items-center left-0 ${
+								showMobileInputSearch ? 'top-15' : ''
+							} z-10 w-full bg-white dark:bg-black border mt-1 rounded-md shadow ${
+								showMobileInputSearch
+									? 'h-[20dvh]'
+									: 'h-[20dvh]'
+							}`}
+						>
+							<span className='text-white text-xl animate-pulse'>
+								Loading...
+							</span>
+						</div>
+					)}
+					{!isLoading && isOpen && results.length > 0 && (
 						<ResultList
 							listRef={listRef}
 							setIsOpen={setIsOpen}

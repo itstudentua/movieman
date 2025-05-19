@@ -8,15 +8,15 @@ import useSWR from 'swr'
 import { mutate } from 'swr'
 import dynamic from 'next/dynamic'
 
-const MainPageSelect = dynamic(
-	() => import('./MainPageSelect'))
+const MainPageSelect = dynamic(() => import('./MainPageSelect'))
 
-const MotionDiv = dynamic(
-	() => import('framer-motion').then(mod => mod.motion.div))
+const MotionDiv = dynamic(() =>
+	import('framer-motion').then(mod => mod.motion.div)
+)
 
-const AnimatePresence = dynamic(
-	() => import('framer-motion').then(mod => mod.AnimatePresence))
-
+const AnimatePresence = dynamic(() =>
+	import('framer-motion').then(mod => mod.AnimatePresence)
+)
 
 const ListMenuBlock = dynamic(() => import('../general/ListMenuBlock'))
 
@@ -24,22 +24,13 @@ const DynamicImage = dynamic(() => import('next/image'))
 
 const DynamicLink = dynamic(() => import('next/link'))
 
-
-type Movie = {
-	id: number
-	title: string
-	overview: string
-	poster_path: string
-	backdrop_path: string
-	vote_average: number
-	release_date: string
-}
+import { CommonMedia } from '@/lib/movieTypes'
 
 type Props = {
 	allMovies: {
-		trending: Movie[]
-		topRated: Movie[]
-		upcoming: Movie[]
+		trending: CommonMedia[]
+		topRated: CommonMedia[]
+		upcoming: CommonMedia[]
 	}
 }
 
@@ -96,23 +87,31 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 		}
 	}, [isPaused])
 
-
-	const { data, error, isLoading } = useSWR(`/api/db`, fetcher, {
+	const { data, isLoading } = useSWR(`/api/db`, fetcher, {
 		revalidateOnFocus: true,
 	})
 
-	function useMediaFlags(data: any[], mediaId: number): MediaFlags | null {
+	function getMediaFlags(
+		data: CommonMedia[] | undefined,
+		mediaId: number
+	): MediaFlags | null {
+		if (!Array.isArray(data) || !session?.user.id) {
+			return null
+		}
+
 		const item = data.find(entry => entry.mediaId === mediaId)
 		if (!item) return null
 
 		return {
-			isWatched: item.isWatched,
-			isWishlist: item.isWishlist,
-			isFavorite: item.isFavorite,
+			isWatched: item.isWatched ?? false,
+			isWishlist: item.isWishlist ?? false,
+			isFavorite: item.isFavorite ?? false,
 		}
 	}
 
-	async function updateMovie(media: any) {
+	const flags = getMediaFlags(data, movie.id as number)
+
+	async function updateMovie(media: CommonMedia) {
 		await fetch('/api/db', {
 			method: 'POST',
 			headers: {
@@ -139,6 +138,11 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 
 		await mutate(`/api/db`)
 	}
+
+	const dateStr = movie.release_date || movie?.first_air_date
+	const watchedButton = Boolean(
+		dateStr && new Date(dateStr).getTime() < Date.now()
+	)
 
 	if (!movies || movies.length === 0 || isLoading) {
 		return (
@@ -173,9 +177,10 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 					>
 						<DynamicImage
 							src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
-							alt={movie.title}
+							alt={movie.title as string}
 							fill
 							className='object-cover'
+							priority
 						/>
 						<div className='absolute inset-0 bg-white/50 dark:bg-black/70' />
 					</MotionDiv>
@@ -204,10 +209,11 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 							>
 								<DynamicImage
 									src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-									alt={movie.title}
+									alt={movie.title as string}
 									width={250}
 									height={375}
 									className='rounded-xl shadow-lg'
+									priority
 								/>
 							</DynamicLink>
 						</MotionDiv>
@@ -246,7 +252,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 								>
 									<DynamicImage
 										src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-										alt={movie.title}
+										alt={movie.title as string}
 										width={250}
 										height={375}
 										priority
@@ -265,10 +271,12 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 										.join('.')}`}
 							</p>
 							<p className='text-yellow-800 dark:text-yellow-400 text-md'>
-								{movie.vote_average > 0 &&
-									`Global rating: ${movie.vote_average.toFixed(
-										1
-									)} ⭐`}
+								{movie.vote_average
+									? movie.vote_average > 0 &&
+									  `Global rating: ${movie.vote_average.toFixed(
+											1
+									  )} ⭐`
+									: null}
 							</p>
 							{session?.user.id && (
 								<ListMenuBlock
@@ -276,43 +284,26 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 									setIsPaused={setIsPaused}
 									mediaId={movie.id}
 									addUserMedia={() => updateMovie(movie)}
-									watchedButton={category !== 'upcoming'}
-									isWatched={
-										useMediaFlags(data, movie.id)?.isWatched
-									}
-									isWishlist={
-										useMediaFlags(data, movie.id)
-											?.isWishlist
-									}
-									isFavorite={
-										useMediaFlags(data, movie.id)
-											?.isFavorite
-									}
+									watchedButton={watchedButton}
+									isWatched={flags?.isWatched}
+									isWishlist={flags?.isWishlist}
+									isFavorite={flags?.isFavorite}
 									setIsWishlist={() =>
 										updateMovie({
 											...movie,
-											isWishlist: !useMediaFlags(
-												data,
-												movie.id
-											)?.isWishlist,
+											isWishlist: !flags?.isWishlist,
 										})
 									}
 									setIsFavorite={() =>
 										updateMovie({
 											...movie,
-											isFavorite: !useMediaFlags(
-												data,
-												movie.id
-											)?.isFavorite,
+											isFavorite: !flags?.isFavorite,
 										})
 									}
 									setIsWatched={() =>
 										updateMovie({
 											...movie,
-											isWatched: !useMediaFlags(
-												data,
-												movie.id
-											)?.isWatched,
+											isWatched: !flags?.isWatched,
 										})
 									}
 								/>

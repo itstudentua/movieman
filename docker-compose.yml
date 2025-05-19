@@ -22,14 +22,14 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: nextauth
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - ./db_folder:/var/lib/postgresql/data
     ports:
       - "5432:5432"
     networks:
       - app-network
 
-volumes:
-  postgres_data:
+# volumes:
+#   postgres_data:
 
 networks:
   app-network:

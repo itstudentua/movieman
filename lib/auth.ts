@@ -3,7 +3,7 @@ import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 import { PrismaAdapter } from '@next-auth/prisma-adapter'
 import { prisma } from '@/lib/prisma'
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import type { AdapterUser } from 'next-auth/adapters'
 import type { JWT } from 'next-auth/jwt'
 import type { Account, Session, User } from 'next-auth'
@@ -59,15 +59,11 @@ export const authOptions: NextAuthOptions = {
 		async signIn({
 			user,
 			account,
-			profile,
-			email,
-			credentials,
+			
 		}: {
 			user: User | AdapterUser
 			account: Account | null
-			profile?: any
-			email?: { verificationRequest?: boolean }
-			credentials?: Record<string, unknown>
+			
 		}) {
 			if (account?.provider === 'google') {
 				const existingUser = await prisma.user.findUnique({

@@ -1,23 +1,7 @@
 import { useEffect } from 'react'
 
-type ResultList = {
-    id: number
-    title?: string
-    name?: string
-    poster_path?: string
-    media_type?: string
-    release_date?: string
-    runtime?: number
-    known_for_department?: string
-    known_for?: {
-        title?: string
-        name?: string
-    }[]
-    cast?: {
-        name: string
-    }[]
-}
-
+import { CommonMedia } from '@/lib/movieTypes'
+import Image from 'next/image'
 
 export default function ResultList({
 	results,
@@ -28,22 +12,14 @@ export default function ResultList({
 	setHighlightedIndex,
 	showMobileInputSearch,
 }: {
-	results: ResultList[]
+	results: CommonMedia[]
 	listRef: React.RefObject<HTMLUListElement | null>
 	setIsOpen: React.Dispatch<React.SetStateAction<boolean>>
 	highlightedIndex: number
-	handleSelect: (item: any) => void
+	handleSelect: (item: CommonMedia) => void
 	setHighlightedIndex: React.Dispatch<React.SetStateAction<number>>
 	showMobileInputSearch: boolean
 }) {
-	// Обработчик клика вне поля поиска
-	const handleClickOutside = (e: MouseEvent) => {
-		if (!e.target || !(e.target instanceof HTMLElement)) return
-		if (!e.target.closest('.search-dropdown')) {
-			setIsOpen(false)
-		}
-	}
-
 	// Прокручиваем список при изменении highlightedIndex
 	useEffect(() => {
 		if (listRef.current && highlightedIndex !== -1) {
@@ -57,9 +33,17 @@ export default function ResultList({
 				})
 			}
 		}
-	}, [highlightedIndex])
+	}, [highlightedIndex, listRef])
 
 	useEffect(() => {
+		// Обработчик клика вне поля поиска
+		const handleClickOutside = (e: MouseEvent) => {
+			if (!e.target || !(e.target instanceof HTMLElement)) return
+			if (!e.target.closest('.search-dropdown')) {
+				setIsOpen(false)
+			}
+		}
+
 		document.addEventListener('mousedown', handleClickOutside)
 		return () => {
 			document.removeEventListener('mousedown', handleClickOutside)
@@ -89,10 +73,20 @@ export default function ResultList({
 						}`}
 					>
 						<div className='flex items-center'>
-							<img
+							{/* <img
 								src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
 								alt={item.title || item.name}
 								className='rounded shadow-lg h-15'
+							/> */}
+							<Image
+								src={`https://image.tmdb.org/t/p/w500${item.poster_path}`}
+								alt={
+									(item.title as string) ||
+									(item.name as string)
+								}
+								className='rounded shadow-lg'
+								height={100}
+								width={70}
 							/>
 							<div className='flex flex-col ml-4'>
 								<h3 className='font-semibold text-xl'>
@@ -104,7 +98,6 @@ export default function ResultList({
 											{item.media_type === 'tv'
 												? 'TV Show'
 												: 'Movie'}
-
 											{item?.release_date && (
 												<>
 													{' | '}
@@ -149,8 +142,8 @@ export default function ResultList({
 									{item?.cast?.length
 										? item.cast
 												.map(
-													(actor: { name: string }) =>
-														actor?.name
+													actor =>
+														actor.name as string
 												)
 												.join(', ')
 										: ''}

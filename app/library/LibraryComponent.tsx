@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { UserMedia } from '@prisma/client'
 import { formatDate } from 'lib/formatDate'
 import { usePathname } from 'next/navigation'
+import Image from 'next/image'
 
 import { ArrowDownAZ, ArrowUpZA } from 'lucide-react'
 import { filterMediaByTab, sortMedia } from './libraryUtils'
@@ -24,6 +25,8 @@ const DeleteListDialog = dynamic(() => import('./DeleteListDialog'))
 const LibrarySelectedList = dynamic(() => import('./LibrarySelectList'))
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
+
+import { CommonMedia } from '@/lib/movieTypes'
 
 export default function MyLibrary({session}: {session: Session | null}) {
 	const [activeTab, setActiveTab] = useState('watched')
@@ -85,7 +88,6 @@ export default function MyLibrary({session}: {session: Session | null}) {
 	// function to get media from list
 	const {
 		data: userListsMedia,
-		error: userListsMediaError,
 		isLoading: userListsMediaLoading,
 	} = useSWR(
 		!!session?.user.id && !!selectedListId
@@ -154,7 +156,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 	}
 
 	useEffect(() => {
-		activeTab !== '' && setSelectedListId('')
+		if(activeTab !== '') setSelectedListId('')
 	}, [activeTab])
 
 	// function to handle selected list and fetch media
@@ -169,14 +171,14 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		}
 		setActiveTab('')
 		setSelectedListId(listId)
-		const selected = userLists.find((list: any) => list.id === listId)
+		const selected = userLists.find((list: {id: string}) => list.id === listId)
 		if (selected) {
 			setSelectedListName(selected.name)
 		}
 	}
 	function getCount() {
 		const filteredCommon = (commonData || []).filter(
-			(obj: any) => obj.isWatched || obj.isWishlist || obj.isFavorite
+			(obj: {isWatched: boolean, isWishlist: boolean, isFavorite: boolean}) => obj.isWatched || obj.isWishlist || obj.isFavorite
 		)
 
 		return filteredCommon.length === 0
@@ -219,7 +221,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 				</span>
 			</h1>
 
-			<LibraryTabsComponent 
+			<LibraryTabsComponent
 				selectedListId={selectedListId}
 				activeTab={activeTab}
 				setActiveTab={setActiveTab}
@@ -259,13 +261,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 						/>
 						{activeTab === '' && (
 							<div className='flex gap-2'>
-								{/* <Link
-									prefetch={true}
-									className='flex-shrink-0 hover:opacity-70'
-									href={`/sharelist?userId=${session.user.id}&listId=${selectedListId}`}
-								>
-									<Share2 className='w-6 h-6 text-black dark:text-white cursor-pointer' />
-								</Link> */}
+							
 
 								<EditListDialog
 									currentName={selectedListName}
@@ -284,7 +280,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 						<label className='text-xl'>Sort by</label>
 
 						<LibrarySelectedList setSortOption={setSortOption} />
-						
+
 						<button
 							onClick={() =>
 								setSortOrder(prev =>
@@ -309,7 +305,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 					</p>
 					<div className='mt-10 flex flex-col gap-5'>
 						{sortMedia(getData(), sortOption, sortOrder).map(
-							(item: any) => (
+							(item: CommonMedia) => (
 								<div
 									key={item.id}
 									className='w-full flex gap-5 border-b pb-5 rounded items-center flex-wrap sm:flex-nowrap'
@@ -324,10 +320,17 @@ export default function MyLibrary({session}: {session: Session | null}) {
 													: 'movie'
 											}/${item.mediaId}`}
 										>
-											<img
+											{/* <img
 												src={`https://image.tmdb.org/t/p/w500${item.poster}`}
 												alt={item.title}
 												className='h-40 rounded-xl'
+											/> */}
+											<Image
+												src={`https://image.tmdb.org/t/p/w500${item.poster}`}
+												alt={item.title as string}
+												width={130}
+												height={195} // <- пропорционально 500x750 (2:3)
+												className='rounded-lg'
 											/>
 										</Link>
 									)}
@@ -364,10 +367,12 @@ export default function MyLibrary({session}: {session: Session | null}) {
 														: 'movie'
 												}/${item.mediaId}`}
 											>
-												<img
+												<Image
 													src={`https://image.tmdb.org/t/p/w500${item.poster}`}
-													alt={item.title}
-													className='h-40 rounded-xl'
+													alt={item.title as string}
+													width={200}
+													height={300} // <- пропорционально 500x750 (2:3)
+													className='rounded-lg'
 												/>
 											</Link>
 										)}

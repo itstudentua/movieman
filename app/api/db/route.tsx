@@ -3,6 +3,8 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 
+import { CommonMedia } from '@/lib/movieTypes'
+
 export async function POST(req: Request) {
 	const session = await getServerSession(authOptions)
 
@@ -23,7 +25,7 @@ export async function POST(req: Request) {
 
 	if (existing) {
 		// Создаём объект с обновляемыми полями
-		const updateData: any = {}
+		const updateData: CommonMedia = {}
 		if (body.title !== undefined) updateData.title = body.title
 		if (body.year !== undefined) updateData.year = body.year
 		if (body.poster !== undefined) updateData.poster = body.poster

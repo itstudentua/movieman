@@ -8,6 +8,12 @@
 - TMDB API
 
 
+docker-compose build --no-cache
+docker-compose up
+or
+docker-compose up --build
+
+
 ### Google auth
 
 Credentials -> MovieMan -> edit url from localhost to another ip

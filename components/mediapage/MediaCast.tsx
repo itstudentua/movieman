@@ -1,25 +1,14 @@
 import Image from 'next/image'
 import Link from 'next/link'
+import { CastMember } from '@/lib/movieTypes'
 
-interface Role {
-	character: string
-}
-
-interface CastMember {
-	id: number
-	name: string
-	roles: Role[]
-	character?: string
-	profile_path: string
-	total_episode_count?: number // Для сериалов
-}
 
 export default function MediaCast({
 	cast,
 	mediaType
 }: {
-	cast: any
-	mediaType: any
+	cast: CastMember[]
+	mediaType: string
 }) {
 	return (
 		<>
@@ -40,7 +29,7 @@ export default function MediaCast({
 								{person.profile_path ? (
 									<Image
 										src={`https://image.tmdb.org/t/p/w500${person.profile_path}`}
-										alt={person.name}
+										alt={person.name as string}
 										fill
 										className='object-cover'
 										sizes='150px'
@@ -57,7 +46,7 @@ export default function MediaCast({
 								</p>
 								<p className='text-xs text-gray-500 truncate'>
 									{mediaType === 'tv'
-										? person?.roles[0]?.character
+										? person?.roles?.[0]?.character
 										: person?.character}
 								</p>
 								{mediaType === 'tv' && (

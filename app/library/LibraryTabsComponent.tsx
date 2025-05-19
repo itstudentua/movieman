@@ -7,7 +7,6 @@ import {
 	SelectValue,
 } from '@/components/ui/select'
 
-
 type LibraryTabsComponentProps = {
 	activeTab: string
 	setActiveTab: (tab: string) => void
@@ -63,7 +62,7 @@ export default function LibraryTabsComponent({activeTab, setActiveTab, mediaType
 							<SelectValue placeholder='My lists' />
 						</SelectTrigger>
 						<SelectContent>
-							{userLists.map((listItem: any) => (
+							{userLists.map((listItem: {id: string, name: string}) => (
 								<SelectItem
 									key={listItem.id}
 									value={listItem.id}
