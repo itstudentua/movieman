@@ -141,6 +141,16 @@ const SearchBar = ({
 
 	const [isPending, startTransition] = useTransition()
 
+	if (isPending) {
+		return (
+			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
+				<span className='text-white text-xl animate-pulse'>
+					Loading...
+				</span>
+			</div>
+		)
+	}
+
 	return (
 		<>
 			{showMobileInputSearch ? (
@@ -169,7 +179,7 @@ const SearchBar = ({
 					>
 						<X size={24} />
 					</button>
-					{isLoading && (
+					{(isLoading) && (
 						<div
 							className={`absolute flex justify-center items-center left-0 ${
 								showMobileInputSearch ? 'top-15' : ''
@@ -223,7 +233,7 @@ const SearchBar = ({
 							)}
 						</div>
 					</div>
-					{isLoading && (
+					{(isLoading) && (
 						<div
 							className={`absolute flex justify-center items-center left-0 ${
 								showMobileInputSearch ? 'top-15' : ''
