@@ -143,8 +143,8 @@ const SearchBar = ({
 
 	if (isPending) {
 		return (
-			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
-				<span className='text-white text-xl animate-pulse'>
+			<div className='fixed inset-0 z-100 dark:bg-black bg-white flex items-center justify-center'>
+				<span className='dark:text-white text-black text-xl animate-pulse'>
 					Loading...
 				</span>
 			</div>
@@ -179,17 +179,17 @@ const SearchBar = ({
 					>
 						<X size={24} />
 					</button>
-					{(isLoading) && (
+					{isLoading && (
 						<div
 							className={`absolute flex justify-center items-center left-0 ${
 								showMobileInputSearch ? 'top-15' : ''
-							} z-10 w-full bg-white dark:bg-black border mt-1 rounded-md shadow ${
+							} z-10 w-full bg-white dark:bg-black text-black dark:text-white border mt-1 rounded-md shadow ${
 								showMobileInputSearch
 									? 'h-[10dvh]'
 									: 'h-[10dvh]'
 							}`}
 						>
-							<span className='text-white text-xl animate-pulse'>
+							<span className='text-xl animate-pulse'>
 								Loading...
 							</span>
 						</div>
@@ -233,17 +233,17 @@ const SearchBar = ({
 							)}
 						</div>
 					</div>
-					{(isLoading) && (
+					{isLoading && (
 						<div
 							className={`absolute flex justify-center items-center left-0 ${
 								showMobileInputSearch ? 'top-15' : ''
-							} z-10 w-full bg-white dark:bg-black border mt-1 rounded-md shadow ${
+							} z-10 w-full bg-white dark:bg-black text-black dark:text-white border mt-1 rounded-md shadow ${
 								showMobileInputSearch
 									? 'h-[20dvh]'
 									: 'h-[20dvh]'
 							}`}
 						>
-							<span className='text-white text-xl animate-pulse'>
+							<span className='text-xl animate-pulse'>
 								Loading...
 							</span>
 						</div>

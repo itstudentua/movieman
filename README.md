@@ -7,6 +7,9 @@
 - Postgres/Neon
 - TMDB API
 
+https://www.themoviedb.org/settings/api/details 
+Добавить ссылку сайта localhost:3000 or vercel...
+
 Create .env file
 Fill it like: 
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/nextauth #  для локальной бд
