@@ -85,13 +85,13 @@ TMDB_API_KEY=your_tmdb_api_key
 ```
 
 ### 3. Run Migrations
-npx prisma migrate dev --name init
+`npx prisma migrate dev --name init`
 
 ### 4. Docker (optional but recommended)
-docker-compose build --no-cache
-docker-compose up
+`docker-compose build --no-cache`
+`docker-compose up`
 
-docker-compose up --build
+`docker-compose up --build`
 
 ## 🔐 Google Auth Setup
 
@@ -105,6 +105,6 @@ Ensure the following environment variables are set in your Vercel dashboard:
 
 DATABASE_URL
 NEXTAUTH_SECRET
-NEXTAUTH_URL → https://your-app-name.vercel.app
+NEXTAUTH_URL → `https://your-app-name.vercel.app`
 GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
 TMDB_API_KEY
