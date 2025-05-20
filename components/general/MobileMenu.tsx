@@ -100,22 +100,7 @@ export default function MobileMenu({ toggle, clearInput, isOpen, setIsOpen }: Pr
 											TV Shows
 										</Link>
 									</li>
-									<li
-										onClick={() => {
-											setIsOpen(false)
-											toggle()
-										}}
-										className='bg-black text-white dark:bg-white dark:text-black rounded-md text-2xl font-semibold hover:opacity-80 cursor-pointer'
-									>
-										<Link
-											prefetch={true}
-											href='/settings'
-											onClick={clearInput}
-											className='block w-full h-full py-2 px-5'
-										>
-											Settings
-										</Link>
-									</li>
+									
 								</ul>
 							</div>
 						</motion.div>
