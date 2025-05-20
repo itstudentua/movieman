@@ -205,8 +205,8 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		userListsLoading
 	)
 		return (
-			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
-				<span className='text-white text-xl animate-pulse'>
+			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
+				<span className='text-black dark:text-white text-xl animate-pulse'>
 					Loading...
 				</span>
 			</div>

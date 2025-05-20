@@ -146,8 +146,8 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 
 	if (!movies || movies.length === 0 || isLoading) {
 		return (
-			<div className='fixed inset-0 z-100 bg-black flex items-center justify-center'>
-				<span className='text-white text-xl animate-pulse'>
+			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
+				<span className='text-black dark:text-white text-xl animate-pulse'>
 					Loading...
 				</span>
 			</div>
@@ -182,7 +182,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 							className='object-cover'
 							priority
 						/>
-						<div className='absolute inset-0 bg-white/50 dark:bg-black/70' />
+						<div className='absolute inset-0 bg-white/70 dark:bg-black/70' />
 					</MotionDiv>
 				</AnimatePresence>
 

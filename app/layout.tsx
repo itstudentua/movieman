@@ -8,8 +8,12 @@ import MainPageClientWrapper from '@/components/mainpage/MainPageClientWrapper'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-	title: 'MovieMan🍿',
+	title: 'MovieMan',
 	description: 'Your own movie library',
+	icons: {
+		icon: '/icon.png',
+		apple: '/apple-touch-icon.png',
+	},
 }
 
 export default function RootLayout({
@@ -24,7 +28,9 @@ export default function RootLayout({
 					defaultTheme='system'
 				>
 					<SessionWrapper>
-						<MainPageClientWrapper>{children}</MainPageClientWrapper>
+						<MainPageClientWrapper>
+							{children}
+						</MainPageClientWrapper>
 					</SessionWrapper>
 				</ThemeProvider>
 			</body>

@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import { getPerson } from '@/utils/api' // Твоя функция для запроса данных о фильмах
 import MediaRecommendation from '@/components/mediapage/MediaRecommendations'
 import { formatPersonDates } from '@/lib/formatDate'
-import PersonBiography from '@/app/people/Bigraphy'
+import PersonBiography from '@/app/people/Biography'
 import Image from 'next/image'
 
 type Params = Promise<{ id: string }>
@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: { params: Params }) {
 	const person = await getPerson(id)
 
 	return {
-		title: 'MovieMan🍿: ' + person?.name,
+		title: 'MovieMan: ' + person?.name,
 		description:
 			person?.known_for_department || 'No description available.',
 	}
@@ -31,8 +31,6 @@ const PersonPage = async ({ params }: { params: Params }) => {
 	if (!person) {
 		return notFound() // Если фильм не найден, показываем страницу с ошибкой 404
 	}
-
-	console.log(person)
 
 	return (
 		<div className='px-3 sm:px-10 max-w-7xl mx-auto mobile-header'>

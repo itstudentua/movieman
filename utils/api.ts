@@ -1,21 +1,7 @@
 // utils/api.ts
 
 import axios from 'axios'
-//api.themoviedb.org/3/movie/511619?api_key=bf3723e35a8315d4c529c4ec2b92422a&language=en
-// export const getMovie = async (id: string) => {
-// 	const API_KEY = process.env.TMDB_API_KEY
 
-// 	try {
-// 		const response = await axios.get(
-// 			`https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=en`
-// 			//`https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}&language=en-US`,
-// 		)
-// 		return response.data // Возвращаем данные о фильме
-// 	} catch (error) {
-// 		console.error('Error fetching movie:', error)
-// 		return null // В случае ошибки возвращаем null
-// 	}
-// }
 
 const API_KEY = process.env.TMDB_API_KEY
 
@@ -157,5 +143,4 @@ export async function getPopularMovies(
 		(movie: {release_date: Date}) => new Date(movie.release_date).getTime() > Date.now()
 	)
 	return data.results
-
 }

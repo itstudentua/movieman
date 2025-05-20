@@ -55,7 +55,7 @@ const SearchBar = ({
 	// Функция для получения фильмов с TMDb
 	const fetchMovies = async (query: string) => {
 		try {
-			setIsLoading(true)
+			query !== '' && setIsLoading(true)
 			const response = await axios.get(`/api/search?query=${query}`)
 			setResults(response.data.results)
 			setIsOpen(true)
@@ -194,17 +194,20 @@ const SearchBar = ({
 							</span>
 						</div>
 					)}
-					{!isLoading && isOpen && results.length > 0 && (
-						<ResultList
-							listRef={listRef}
-							setIsOpen={setIsOpen}
-							highlightedIndex={highlightedIndex}
-							handleSelect={handleSelect}
-							setHighlightedIndex={setHighlightedIndex}
-							results={results}
-							showMobileInputSearch={showMobileInputSearch}
-						/>
-					)}
+					{!isLoading &&
+						isOpen &&
+						results.length > 0 &&
+						inputValue !== '' && (
+							<ResultList
+								listRef={listRef}
+								setIsOpen={setIsOpen}
+								highlightedIndex={highlightedIndex}
+								handleSelect={handleSelect}
+								setHighlightedIndex={setHighlightedIndex}
+								results={results}
+								showMobileInputSearch={showMobileInputSearch}
+							/>
+						)}
 				</motion.div>
 			) : (
 				<div className='relative w-full search-dropdown'>
@@ -248,17 +251,20 @@ const SearchBar = ({
 							</span>
 						</div>
 					)}
-					{!isLoading && isOpen && results.length > 0 && (
-						<ResultList
-							listRef={listRef}
-							setIsOpen={setIsOpen}
-							highlightedIndex={highlightedIndex}
-							handleSelect={handleSelect}
-							setHighlightedIndex={setHighlightedIndex}
-							results={results}
-							showMobileInputSearch={showMobileInputSearch}
-						/>
-					)}
+					{!isLoading &&
+						isOpen &&
+						results.length > 0 &&
+						inputValue !== '' && (
+							<ResultList
+								listRef={listRef}
+								setIsOpen={setIsOpen}
+								highlightedIndex={highlightedIndex}
+								handleSelect={handleSelect}
+								setHighlightedIndex={setHighlightedIndex}
+								results={results}
+								showMobileInputSearch={showMobileInputSearch}
+							/>
+						)}
 				</div>
 			)}
 		</>
