@@ -55,7 +55,9 @@ const SearchBar = ({
 	// Функция для получения фильмов с TMDb
 	const fetchMovies = async (query: string) => {
 		try {
-			query !== '' && setIsLoading(true)
+			if (query !== '') {
+				setIsLoading(true)
+			}
 			const response = await axios.get(`/api/search?query=${query}`)
 			setResults(response.data.results)
 			setIsOpen(true)
