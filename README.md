@@ -95,16 +95,16 @@ TMDB_API_KEY=your_tmdb_api_key
 
 ## 🔐 Google Auth Setup
 
-Go to Google Cloud Console
-Create OAuth2 credentials
-Add `http://localhost:3000` and `https://your-vercel-app.vercel.app` to "Authorized redirect URIs"
+- Go to Google Cloud Console
+- Create OAuth2 credentials
+- Add `http://localhost:3000` and `https://your-vercel-app.vercel.app` to "Authorized redirect URIs"
 
 ## 🌍 Deployment on Vercel
 
 Ensure the following environment variables are set in your Vercel dashboard:
 
-DATABASE_URL
-NEXTAUTH_SECRET
-NEXTAUTH_URL → `https://your-app-name.vercel.app`
-GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
-TMDB_API_KEY
+- DATABASE_URL
+- NEXTAUTH_SECRET
+- NEXTAUTH_URL → `https://your-app-name.vercel.app`
+- GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+- TMDB_API_KEY
