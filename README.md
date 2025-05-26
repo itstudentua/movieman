@@ -96,14 +96,14 @@ TMDB_API_KEY=your_tmdb_api_key
 ### 5. Docker (optional but recommended)
 `docker-compose build --no-cache`
 `docker-compose up`
-
+or
 `docker-compose up --build`
 
 ### 6. Start project
 #### 📍 Local:
 Make sure your database is running (e.g., PostgreSQL).
 Install dependencies:
-`npm install`
+`npm install`.
 Start the development server:
 `npm run dev`
 
