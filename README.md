@@ -64,9 +64,15 @@ MovieMan is a web application for movie and TV series lovers who want to organiz
 http://localhost:3000
 https://your-deployed-app.vercel.app
 
+### 2. 🔐 Google Auth Setup
+
+- Go to Google Cloud Console
+- Create OAuth2 credentials
+- Add `http://localhost:3000` and `https://your-vercel-app.vercel.app` to "Authorized redirect URIs"
+
 ---
 
-### 2. Create `.env` file
+### 3. Create `.env` file
 
 ```env
 # Database (Neon or local Postgres)
@@ -84,20 +90,27 @@ GOOGLE_CLIENT_SECRET=your_google_client_secret
 TMDB_API_KEY=your_tmdb_api_key
 ```
 
-### 3. Run Migrations
+### 4. Run Migrations
 `npx prisma migrate dev --name init`
 
-### 4. Docker (optional but recommended)
+### 5. Docker (optional but recommended)
 `docker-compose build --no-cache`
 `docker-compose up`
 
 `docker-compose up --build`
 
-## 🔐 Google Auth Setup
+### 6. Start project
+#### 📍 Local:
+Make sure your database is running (e.g., PostgreSQL).
+Install dependencies:
+`npm install`
+Start the development server:
+`npm run dev`
 
-- Go to Google Cloud Console
-- Create OAuth2 credentials
-- Add `http://localhost:3000` and `https://your-vercel-app.vercel.app` to "Authorized redirect URIs"
+#### 🐳 Docker:
+Build and start the containers:
+- `docker-compose up --build`
+
 
 ## 🌍 Deployment on Vercel
 
@@ -106,5 +119,6 @@ Ensure the following environment variables are set in your Vercel dashboard:
 - DATABASE_URL
 - NEXTAUTH_SECRET
 - NEXTAUTH_URL → `https://your-app-name.vercel.app`
-- GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET
+- GOOGLE_CLIENT_ID 
+- GOOGLE_CLIENT_SECRET
 - TMDB_API_KEY
