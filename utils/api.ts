@@ -134,7 +134,7 @@ export async function getPopularMovies(
 ) {
 	const BASE_URL = 'https://api.themoviedb.org/3'
 	const endpoint = ENDPOINTS[type]
-	const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}`
+const url = `${BASE_URL}${endpoint}?api_key=${API_KEY}&language=en-US&region=US`
 
 	const res = await fetch(url, { cache: 'no-store' })
 	if (!res.ok) throw new Error('Ошибка при загрузке фильмов')

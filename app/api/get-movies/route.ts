@@ -18,7 +18,7 @@ export async function GET(req: Request) {
 		)
 	}
 
-	const url = `https://api.themoviedb.org/3/${type}/${category}?api_key=${API_KEY}&page=${page}`
+	const url = `https://api.themoviedb.org/3/${type}/${category}?api_key=${API_KEY}&language=en-US&region=US&page=${page}`
 
 	try {
 		const res = await fetch(url)
