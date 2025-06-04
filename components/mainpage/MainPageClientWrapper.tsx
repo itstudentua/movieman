@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import LazyToaster from '@/components/general/LazyToaster'
-
+import { useEffect } from 'react'
 
 
 const ScrollToTopButton = dynamic(
@@ -20,6 +20,10 @@ export default function MainPageClientWrapper({
 }: {
 	children: React.ReactNode
 }) {
+	
+	useEffect(() => {
+		fetch('/api/log-visitor', { method: 'POST' }).catch(console.error)
+	}, [])
 	return (
         <div className='flex flex-col h-[100dvh] transition-colors duration-300 w-full min-w-[300px]'>
 			<Header />

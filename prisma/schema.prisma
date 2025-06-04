@@ -105,3 +105,13 @@ model UserList {
     items     UserListItem[]
 }
 
+
+model Visitor {
+    id        Int      @id @default(autoincrement())
+    ip        String
+    browser   String
+    os        String
+    device    String // Например: "Apple iPhone 13"
+    userAgent String
+    createdAt DateTime @default(now())
+}
