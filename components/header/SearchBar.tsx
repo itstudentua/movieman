@@ -6,6 +6,7 @@ import { useTransition } from 'react'
 import ResultList from './ResultList'
 import { motion } from 'framer-motion'
 import { CommonMedia } from '@/lib/movieTypes'
+import LoadingPage from '../general/Loader'
 
 type Props = {
 	mobileMenu: boolean
@@ -144,13 +145,7 @@ const SearchBar = ({
 	const [isPending, startTransition] = useTransition()
 
 	if (isPending) {
-		return (
-			<div className='fixed inset-0 z-100 dark:bg-black bg-white flex items-center justify-center'>
-				<span className='dark:text-white text-black text-xl animate-pulse'>
-					Loading...
-				</span>
-			</div>
-		)
+		return <LoadingPage />
 	}
 
 	return (

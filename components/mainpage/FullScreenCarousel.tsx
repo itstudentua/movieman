@@ -25,6 +25,7 @@ const DynamicImage = dynamic(() => import('next/image'))
 const DynamicLink = dynamic(() => import('next/link'))
 
 import { CommonMedia } from '@/lib/movieTypes'
+import LoadingPage from '../general/Loader'
 
 type Props = {
 	allMovies: {
@@ -149,11 +150,7 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 
 	if (!movies || movies.length === 0 || isLoading) {
 		return (
-			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
-				<span className='text-black dark:text-white text-xl animate-pulse'>
-					Loading...
-				</span>
-			</div>
+			<LoadingPage />
 		)
 	}
 

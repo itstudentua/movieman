@@ -21,6 +21,7 @@ import { sortMedia, filterMediaByTab } from '../library/libraryUtils'
 import { useSearchParams } from 'next/navigation'
 import { CommonMedia } from '@/lib/movieTypes'
 import Image from 'next/image'
+import LoadingPage from '@/components/general/Loader'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
@@ -122,11 +123,7 @@ export default function ShareListComponent() {
 
 	if (isLoadingList || isLoadingUserList || isLoading || isLoadingUser)
 		return (
-			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
-				<span className='text-black dark:text-white text-xl animate-pulse'>
-					Loading...
-				</span>
-			</div>
+			<LoadingPage />
 		)
 
 	return (

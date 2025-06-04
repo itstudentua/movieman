@@ -27,6 +27,7 @@ const LibrarySelectedList = dynamic(() => import('./LibrarySelectList'))
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 import { CommonMedia } from '@/lib/movieTypes'
+import LoadingPage from '@/components/general/Loader'
 
 export default function MyLibrary({session}: {session: Session | null}) {
 	const [activeTab, setActiveTab] = useState('watched')
@@ -204,13 +205,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		userListsMediaLoading ||
 		userListsLoading
 	)
-		return (
-			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
-				<span className='text-black dark:text-white text-xl animate-pulse'>
-					Loading...
-				</span>
-			</div>
-		)
+		return <LoadingPage />
 
 	return session?.user.id ? (
 		<div className='mobile-header m-auto max-w-7xl py-3 sm:px-10 px-5'>

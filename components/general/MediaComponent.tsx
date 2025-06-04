@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { formatDate } from '@/lib/formatDate'
 import MoviesPageSelect from './MediaPageSelect'
 import { CommonMedia } from '@/lib/movieTypes'
+import LoadingPage from './Loader'
 
 export default function MediaComponent({ mediaType }: { mediaType: string }) {
 	const [page, setPage] = useState(1)
@@ -75,13 +76,7 @@ export default function MediaComponent({ mediaType }: { mediaType: string }) {
 	if (error) return <p className='text-red-500'>Error.</p>
 
 	if (isLoading && page < 2)
-		return (
-			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
-				<span className='text-black dark:text-white text-xl animate-pulse'>
-					Loading...
-				</span>
-			</div>
-		)
+		return <LoadingPage />
 
 
 	return (

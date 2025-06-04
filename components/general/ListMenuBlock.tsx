@@ -22,6 +22,7 @@ const CreateListDialog = dynamic(
 )
 
 import DropdownListMenu from './DropdownListMenu'
+import LoadingPage from './Loader'
 
 type ListBlockProps = {
 	mediaId?: number
@@ -93,13 +94,9 @@ export default function ListMenuBlock({
 	
 
 	if (userListsLoading)
-		return (
-			<div className='fixed inset-0 z-100 bg-white dark:bg-black flex items-center justify-center'>
-				<span className='text-black dark:text-white text-xl animate-pulse'>
-					Loading...
-				</span>
-			</div>
-		)
+		return 
+			<LoadingPage />
+		
 
 	return (
 		<div className='flex gap-4 mt-3'>
