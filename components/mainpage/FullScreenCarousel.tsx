@@ -53,8 +53,6 @@ export default function FullScreenCarousel({ allMovies }: Props) {
 
 	const movies = useMemo(() => allMovies[category], [allMovies, category])
 	const movie = movies[index]
-
-	console.log(movies);
 	
 
 	const { data: session } = useSession()

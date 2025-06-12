@@ -39,8 +39,6 @@ export default function MediaComponent({ mediaType }: { mediaType: string }) {
 		}
 	}
 
-	console.log(allMedia)
-
 	function getPageTitle(
 		category: string,
 		mediaType: string

@@ -80,30 +80,6 @@ export async function POST(req: Request) {
 }
 
 
-
-// export async function GET(req: Request) {
-// 	const session = await getServerSession(authOptions)
-
-// 	if (!session?.user?.id) {
-// 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-// 	}
-
-// 	const { searchParams } = new URL(req.url)
-// 	const type = searchParams.get('type') // 'movie' или 'tv'
-
-// 	const media = await prisma.userMedia.findMany({
-// 		where: {
-// 			userId: session.user.id,
-// 			...(type ? { type } : {}), // добавляем фильтр, если есть type
-// 		},
-// 		orderBy: {
-// 			createdAt: 'desc',
-// 		},
-// 	})
-
-// 	return NextResponse.json(media)
-// }
-
 export async function GET(req: Request) {
 	const session = await getServerSession(authOptions)
 	const { searchParams } = new URL(req.url)

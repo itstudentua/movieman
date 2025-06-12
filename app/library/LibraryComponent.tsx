@@ -4,7 +4,7 @@ import useSWR from 'swr'
 import { mutate } from 'swr'
 
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { UserMedia } from '@prisma/client'
 import { formatDate } from 'lib/formatDate'
 import { usePathname } from 'next/navigation'
@@ -16,6 +16,10 @@ import { toast } from 'sonner'
 import { Share2 } from 'lucide-react'
 import { Session } from 'next-auth'
 import dynamic from 'next/dynamic'
+import { useCallback } from 'react'
+import { Virtuoso } from 'react-virtuoso'
+
+
 
 const ListMenuBlock = dynamic(() => import('@/components/general/ListMenuBlock'))
 const LibraryTabsComponent = dynamic(() => import('./LibraryTabsComponent'))
@@ -59,32 +63,35 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		revalidateOnFocus: true,
 	})
 
-	async function updateMovie(update: Partial<UserMedia>) {
-		await fetch('/api/db', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(update),
-		})
+	const updateMovie = useCallback(
+		async (update: Partial<UserMedia>) => {
+			await fetch('/api/db', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(update),
+			})
 
+			await mutate(`/api/db`)
+			await mutate(`/api/lists/get?userId=${session?.user.id}`)
+			await mutate(
+				`/api/lists/get-media?userId=${session?.user.id}&listId=${selectedListId}`
+			)
+			await mutate(`/api/lists/count`)
+		},
+		[session?.user.id, selectedListId]
+	)
+
+	const handleListCreated = useCallback(async () => {
 		await mutate(`/api/db`)
 		await mutate(`/api/lists/get?userId=${session?.user.id}`)
 		await mutate(
 			`/api/lists/get-media?userId=${session?.user.id}&listId=${selectedListId}`
 		)
 		await mutate(`/api/lists/count`)
-	}
+	}, [session?.user.id, selectedListId])
 
-
-	const handleListCreated = async () => {
-		await mutate(`/api/db`)
-		await mutate(`/api/lists/get?userId=${session?.user.id}`)
-		await mutate(
-			`/api/lists/get-media?userId=${session?.user.id}&listId=${selectedListId}`
-		)
-		await mutate(`/api/lists/count`)
-	}
 
 	// function to get media from list
 	const {
@@ -146,15 +153,17 @@ export default function MyLibrary({session}: {session: Session | null}) {
 	}
 
 
-
-	function getData() {
+	const filteredData = useMemo(() => {
 		const source = activeTab === '' ? userListsMedia : commonData
+		return Array.isArray(source)
+			? filterMediaByTab(source, mediaType, activeTab)
+			: []
+	}, [commonData, userListsMedia, activeTab, mediaType])
 
-		if (Array.isArray(source)) {
-			return filterMediaByTab(source, mediaType, activeTab)
-		}
-		return []
-	}
+	const sortedData = useMemo(() => {
+		return sortMedia(filteredData, sortOption, sortOrder)
+	}, [filteredData, sortOption, sortOrder])
+
 
 	useEffect(() => {
 		if(activeTab !== '') setSelectedListId('')
@@ -162,6 +171,8 @@ export default function MyLibrary({session}: {session: Session | null}) {
 
 	// function to handle selected list and fetch media
 	const handleSelectChange = async (listId: string) => {
+		if (!listId || listId === selectedListId) return
+
 		if (session) {
 			await mutate(`/api/db`)
 			await mutate(`/api/lists/get?userId=${session?.user.id}`)
@@ -198,6 +209,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		toast.success('Link copied!')
 
 	}
+	
 
 	if (
 		isLoading ||
@@ -256,8 +268,6 @@ export default function MyLibrary({session}: {session: Session | null}) {
 						/>
 						{activeTab === '' && (
 							<div className='flex gap-2'>
-							
-
 								<EditListDialog
 									currentName={selectedListName}
 									onSave={handleListRename}
@@ -295,133 +305,34 @@ export default function MyLibrary({session}: {session: Session | null}) {
 						</button>
 					</div>
 					<p className='text-gray-500 text-xl mt-3'>
-						{getData().length}{' '}
-						{getData().length > 1 ? 'items' : 'item'}
+						{sortedData.length}{' '}
+						{sortedData.length > 1 ? 'items' : 'item'}
 					</p>
-					<div className='mt-10 flex flex-col gap-5'>
-						{sortMedia(getData(), sortOption, sortOrder).map(
+					{/* <div className='mt-10 flex flex-col gap-5'>
+						{sortedData.map(
 							(item: CommonMedia) => (
-								<div
+								<LibraryMediaItem
 									key={item.id}
-									className='w-full flex gap-5 border-b pb-5 rounded items-center flex-wrap sm:flex-nowrap'
-								>
-									{item.poster && (
-										<Link
-											prefetch={true}
-											className='flex-shrink-0 hover:opacity-70 hidden sm:block'
-											href={`/${
-												item.type === 'tv'
-													? 'show'
-													: 'movie'
-											}/${item.mediaId}`}
-										>
-											{/* <img
-												src={`https://image.tmdb.org/t/p/w500${item.poster}`}
-												alt={item.title}
-												className='h-40 rounded-xl'
-											/> */}
-											<Image
-												src={`https://image.tmdb.org/t/p/w500${item.poster}`}
-												alt={item.title as string}
-												width={130}
-												height={195} // <- пропорционально 500x750 (2:3)
-												className='rounded-lg'
-											/>
-										</Link>
-									)}
-									<div className='flex flex-col justify-center grow'>
-										<h2 className='text-xl font-semibold'>
-											<Link
-												prefetch={true}
-												className='flex-shrink-0 hover:opacity-70'
-												href={`/${
-													item.type === 'tv'
-														? 'show'
-														: 'movie'
-												}/${item.mediaId}`}
-											>
-												<span>{item.title} </span>
-											</Link>
-											<span className='text-sm text-gray-500'>
-												{item.year}
-											</span>
-										</h2>
-
-										<p className='text-gray-400 text-sm'>
-											{item.type === 'tv'
-												? 'TV Series'
-												: 'Movie'}
-										</p>
-										{item.poster && (
-											<Link
-												prefetch={true}
-												className='flex-shrink-0 hover:opacity-70 block sm:hidden'
-												href={`/${
-													item.type === 'tv'
-														? 'show'
-														: 'movie'
-												}/${item.mediaId}`}
-											>
-												<Image
-													src={`https://image.tmdb.org/t/p/w500${item.poster}`}
-													alt={item.title as string}
-													width={200}
-													height={300} // <- пропорционально 500x750 (2:3)
-													className='rounded-lg'
-												/>
-											</Link>
-										)}
-										{item?.rating !== 0 && (
-											<p className='border-b-2 w-fit'>
-												Global Rating:{' '}
-												{item.rating?.toFixed(1)} ⭐️
-											</p>
-										)}
-										{item.userRating && (
-											<p>
-												My Rating: {item.userRating} ⭐️
-											</p>
-										)}
-										{item.watchedDate && (
-											<p>
-												Watched date:{' '}
-												{formatDate(item.watchedDate)}
-											</p>
-										)}
-										<p className='mt-3 line-clamp-2'>
-											{item.userComment ||
-												item.description}
-										</p>
-									</div>
-									<ListMenuBlock
-										handleListCreated={handleListCreated}
-										mediaId={item.mediaId}
-										watchedButton={true}
-										isWatched={item.isWatched}
-										isFavorite={item.isFavorite}
-										isWishlist={item.isWishlist}
-										setIsWatched={() =>
-											updateMovie({
-												...item,
-												isWatched: !item.isWatched,
-											})
-										}
-										setIsFavorite={() => {
-											updateMovie({
-												...item,
-												isFavorite: !item.isFavorite,
-											})
-										}}
-										setIsWishlist={() =>
-											updateMovie({
-												...item,
-												isWishlist: !item.isWishlist,
-											})
-										}
-									/>
-								</div>
+									item={item}
+									updateMovie={updateMovie}
+									handleListCreated={handleListCreated}
+								/>
 							)
 						)}
+					</div> */}
+					<div className='mt-10'>
+						<Virtuoso
+							useWindowScroll // 👈 позволяет использовать скролл всей страницы
+							data={sortedData}
+							itemContent={(index, item) => (
+								<LibraryMediaItem
+									key={item.id ?? index}
+									item={item}
+									updateMovie={updateMovie}
+									handleListCreated={handleListCreated}
+								/>
+							)}
+						/>
 					</div>
 				</>
 			)}
@@ -442,3 +353,115 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		</div>
 	)
 }
+
+import React from 'react'
+
+const LibraryMediaItem = React.memo(function LibraryMediaItem({
+	item,
+	updateMovie,
+	handleListCreated,
+}: {
+	item: CommonMedia
+	updateMovie: (data: CommonMedia) => void
+	handleListCreated: () => Promise<void>
+}) {
+	return (
+		<div
+			key={item.id}
+			className='w-full flex gap-5 border-b pb-5 rounded items-center flex-wrap sm:flex-nowrap'
+		>
+			{item.poster && (
+				<Link
+					prefetch={true}
+					className='flex-shrink-0 hover:opacity-70 hidden sm:block'
+					href={`/${item.type === 'tv' ? 'show' : 'movie'}/${
+						item.mediaId
+					}`}
+				>
+					<Image
+						src={`https://image.tmdb.org/t/p/w500${item.poster}`}
+						alt={item.title as string}
+						width={130}
+						height={195} // <- пропорционально 500x750 (2:3)
+						className='rounded-lg'
+						loading='lazy'
+					/>
+				</Link>
+			)}
+			<div className='flex flex-col justify-center grow'>
+				<h2 className='text-xl font-semibold'>
+					<Link
+						prefetch={true}
+						className='flex-shrink-0 text-2xl hover:opacity-70'
+						href={`/${item.type === 'tv' ? 'show' : 'movie'}/${
+							item.mediaId
+						}`}
+					>
+						<span>{item.title} </span>
+					</Link>
+					<span className='text-sm text-gray-500'>{item.year}</span>
+				</h2>
+
+				<p className='text-gray-400 text-sm'>
+					{item.type === 'tv' ? 'TV Series' : 'Movie'}
+				</p>
+				{item.poster && (
+					<Link
+						prefetch={true}
+						className='flex-shrink-0 hover:opacity-70 block sm:hidden'
+						href={`/${item.type === 'tv' ? 'show' : 'movie'}/${
+							item.mediaId
+						}`}
+					>
+						<Image
+							src={`https://image.tmdb.org/t/p/w500${item.poster}`}
+							alt={item.title as string}
+							width={200}
+							height={300} // <- пропорционально 500x750 (2:3)
+							className='rounded-lg my-3'
+							loading='lazy'
+						/>
+					</Link>
+				)}
+				{item?.rating !== 0 && (
+					<p className='border-b-2 w-fit'>
+						Global Rating: {item.rating?.toFixed(1)} ⭐️
+					</p>
+				)}
+				{item.userRating && <p>My Rating: {item.userRating} ⭐️</p>}
+				{item.watchedDate && (
+					<p>Watched date: {formatDate(item.watchedDate)}</p>
+				)}
+				<p className='mt-3 line-clamp-2'>
+					{item.userComment || item.description}
+				</p>
+			</div>
+			<ListMenuBlock
+				handleListCreated={handleListCreated}
+				mediaId={item.mediaId}
+				watchedButton={true}
+				isWatched={item.isWatched}
+				isFavorite={item.isFavorite}
+				isWishlist={item.isWishlist}
+				setIsWatched={() =>
+					updateMovie({
+						...item,
+						isWatched: !item.isWatched,
+					})
+				}
+				setIsFavorite={() => {
+					updateMovie({
+						...item,
+						isFavorite: !item.isFavorite,
+					})
+				}}
+				setIsWishlist={() =>
+					updateMovie({
+						...item,
+						isWishlist: !item.isWishlist,
+					})
+				}
+			/>
+		</div>
+	)
+})

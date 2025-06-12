@@ -132,8 +132,6 @@ export default function ShowClientComponent({
 		handleClick,
 	}
 
-console.log(media);
-
 
 	return (
 		<>
