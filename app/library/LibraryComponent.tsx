@@ -33,15 +33,6 @@ const fetcher = (url: string) => fetch(url).then(res => res.json())
 import { CommonMedia } from '@/lib/movieTypes'
 import LoadingPage from '@/components/general/Loader'
 
-const initialStateMap = {
-	activeTab: 'watched',
-	mediaType: 'movie',
-	sortOption: 'name',
-	sortOrder: 'asc',
-	selectedListId: '',
-	selectedListName: '',
-}
-
 export default function MyLibrary({ session }: { session: Session | null }) {
 	const pathname = usePathname()
 
