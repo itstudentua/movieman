@@ -95,7 +95,7 @@ export default function MediaComponent({ mediaType }: { mediaType: string }) {
 			<div className='flex flex-wrap gap-5 justify-center'>
 				{allMedia.map(media => (
 					<Link
-						href={`/movie/${media.id}`}
+						href={`/${mediaType === "movie" ? "movie" : "show"}/${media.id}`}
 						key={`${media.id} ${categoryOfMedia}`}
 						className='border-1 p-2 rounded-lg cursor-pointer hover:opacity-50'
 					>

@@ -35,7 +35,7 @@ export default function UserDropdownMenu({session, setIsOpen}: {session: Session
 						prefetch={true}
 						href='/library'
 						className='text-xl sm:text-lg font-semibold sm:font-normal cursor-pointer w-full'
-						onClick={() => setIsOpen(false)}
+						onClick={() => {setIsOpen(false); sessionStorage.setItem('moviesScrollY', '0')}}
 					>
 						My library
 					</Link>

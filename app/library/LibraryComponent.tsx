@@ -4,7 +4,7 @@ import useSWR from 'swr'
 import { mutate } from 'swr'
 
 import Link from 'next/link'
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, useRef } from 'react'
 import { UserMedia } from '@prisma/client'
 import { formatDate } from 'lib/formatDate'
 import { usePathname } from 'next/navigation'
@@ -19,9 +19,9 @@ import dynamic from 'next/dynamic'
 import { useCallback } from 'react'
 import { Virtuoso } from 'react-virtuoso'
 
-
-
-const ListMenuBlock = dynamic(() => import('@/components/general/ListMenuBlock'))
+const ListMenuBlock = dynamic(
+	() => import('@/components/general/ListMenuBlock')
+)
 const LibraryTabsComponent = dynamic(() => import('./LibraryTabsComponent'))
 const EditListDialog = dynamic(() => import('./EditListDialog'))
 const DeleteListDialog = dynamic(() => import('./DeleteListDialog'))
@@ -33,17 +33,98 @@ const fetcher = (url: string) => fetch(url).then(res => res.json())
 import { CommonMedia } from '@/lib/movieTypes'
 import LoadingPage from '@/components/general/Loader'
 
-export default function MyLibrary({session}: {session: Session | null}) {
-	const [activeTab, setActiveTab] = useState('watched')
-	const [mediaType, setMediaType] = useState('movie')
+const initialStateMap = {
+	activeTab: 'watched',
+	mediaType: 'movie',
+	sortOption: 'name',
+	sortOrder: 'asc',
+	selectedListId: '',
+	selectedListName: '',
+}
+
+export default function MyLibrary({ session }: { session: Session | null }) {
 	const pathname = usePathname()
 
-	const [sortOption, setSortOption] = useState<string>('name')
-	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+	const [activeTab, setActiveTab] = useState(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			// Если выбран список, activeTab должен быть ''
+			return sessionStorage.getItem('activeTab') ||
+				sessionStorage.getItem('selectedListId') !== ''
+				? sessionStorage.getItem('activeTab')
+				: 'watched'
+		}
+		return 'watched'
+	})
+	const [mediaType, setMediaType] = useState(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			return sessionStorage.getItem('mediaType') || 'movie'
+		}
+		return 'movie'
+	})
+	// ... Повторите эту структуру для всех остальных состояний ...
+	const [sortOption, setSortOption] = useState<string>(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			return sessionStorage.getItem('sortOption') || 'name'
+		}
+		return 'name'
+	})
+	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			return (
+				(sessionStorage.getItem('sortOrder') as 'asc' | 'desc') || 'asc'
+			)
+		}
+		return 'asc'
+	})
+	const [selectedListId, setSelectedListId] = useState(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			return sessionStorage.getItem('selectedListId') || ''
+		}
+		return ''
+	})
+	const [selectedListName, setSelectedListName] = useState(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			return sessionStorage.getItem('selectedListName') || ''
+		}
+		return ''
+	})
 
+	// --- 2. useEffect: Синхронизация при возвращении на вкладку (Focus) ---
+	// ЭТОТ ХУК НУЖЕН, ТОЛЬКО ЕСЛИ КОМПОНЕНТ НЕ РАЗМОНТИРУЕТСЯ, а ПЕРЕИСПОЛЬЗУЕТСЯ
+	const syncActiveTab = useCallback(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			const storedTab = sessionStorage.getItem('activeTab')
+			if (storedTab && storedTab !== activeTab) {
+				setActiveTab(storedTab)
+			}
+			// Можно добавить синхронизацию и других полей, если они меняются
+		}
+	}, [activeTab]) // Зависимость от activeTab
 
-	const [selectedListId, setSelectedListId] = useState('') // id of selected list to show media
-	const [selectedListName, setSelectedListName] = useState('') // name of selected list to show media
+	useEffect(() => {
+		window.addEventListener('focus', syncActiveTab)
+		return () => window.removeEventListener('focus', syncActiveTab)
+	}, [syncActiveTab])
+
+	// --- 3. useEffect: Запись всех состояний при их изменении (Остается прежним) ---
+	useEffect(() => {
+		if (typeof window !== 'undefined' && sessionStorage) {
+			sessionStorage.setItem('activeTab', String(activeTab))
+			sessionStorage.setItem('mediaType', mediaType)
+			sessionStorage.setItem('sortOption', sortOption)
+			sessionStorage.setItem('sortOrder', sortOrder)
+			sessionStorage.setItem('selectedListId', selectedListId)
+			sessionStorage.setItem('selectedListName', selectedListName)
+		}
+	}, [
+		activeTab,
+		mediaType,
+		sortOption,
+		sortOrder,
+		selectedListId,
+		selectedListName,
+	])
+
 	const [isLoadingList, setIsLoadingList] = useState(false)
 
 	// data from usermedia
@@ -56,12 +137,13 @@ export default function MyLibrary({session}: {session: Session | null}) {
 	})
 
 	// function to get lists of user
-	const {
-		data: userLists,
-		isLoading: userListsLoading,
-	} = useSWR(`/api/lists/get?userId=${session?.user.id}`, fetcher, {
-		revalidateOnFocus: true,
-	})
+	const { data: userLists, isLoading: userListsLoading } = useSWR(
+		`/api/lists/get?userId=${session?.user.id}`,
+		fetcher,
+		{
+			revalidateOnFocus: true,
+		}
+	)
 
 	const updateMovie = useCallback(
 		async (update: Partial<UserMedia>) => {
@@ -92,12 +174,8 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		await mutate(`/api/lists/count`)
 	}, [session?.user.id, selectedListId])
 
-
 	// function to get media from list
-	const {
-		data: userListsMedia,
-		isLoading: userListsMediaLoading,
-	} = useSWR(
+	const { data: userListsMedia, isLoading: userListsMediaLoading } = useSWR(
 		!!session?.user.id && !!selectedListId
 			? `/api/lists/get-media?userId=${session?.user.id}&listId=${selectedListId}`
 			: null,
@@ -128,23 +206,28 @@ export default function MyLibrary({session}: {session: Session | null}) {
 	}
 
 	const handleListRename = async (name: string) => {
-    if (!name.trim()) return 
-    setIsLoadingList(true)
+		if (!name.trim()) return
+		setIsLoadingList(true)
 
-    try {
-		const res = await fetch(`/api/lists/rename?id=${selectedListId}&name=${encodeURIComponent(name)}`, {
-			method: 'PATCH',
-		})
+		try {
+			const res = await fetch(
+				`/api/lists/rename?id=${selectedListId}&name=${encodeURIComponent(
+					name
+				)}`,
+				{
+					method: 'PATCH',
+				}
+			)
 
-		const data = await res.json()
+			const data = await res.json()
 
-		if (!res.ok) {
-			toast(data.error || 'Error renaming list')
-		} else {
-			toast('List renamed successfully')
-			await mutate(`/api/lists/get?userId=${session?.user.id}`)
-			setSelectedListName(name)
-		}
+			if (!res.ok) {
+				toast(data.error || 'Error renaming list')
+			} else {
+				toast('List renamed successfully')
+				await mutate(`/api/lists/get?userId=${session?.user.id}`)
+				setSelectedListName(name)
+			}
 		} catch (err) {
 			console.log('Invalid request', err)
 		} finally {
@@ -152,11 +235,10 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		}
 	}
 
-
 	const filteredData = useMemo(() => {
 		const source = activeTab === '' ? userListsMedia : commonData
 		return Array.isArray(source)
-			? filterMediaByTab(source, mediaType, activeTab)
+			? filterMediaByTab(source, mediaType, String(activeTab))
 			: []
 	}, [commonData, userListsMedia, activeTab, mediaType])
 
@@ -164,10 +246,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 		return sortMedia(filteredData, sortOption, sortOrder)
 	}, [filteredData, sortOption, sortOrder])
 
-
-	useEffect(() => {
-		if(activeTab !== '') setSelectedListId('')
-	}, [activeTab])
+	
 
 	// function to handle selected list and fetch media
 	const handleSelectChange = async (listId: string) => {
@@ -178,45 +257,76 @@ export default function MyLibrary({session}: {session: Session | null}) {
 			await mutate(`/api/lists/get?userId=${session?.user.id}`)
 			await mutate(
 				`/api/lists/get-media?userId=${session?.user.id}&listId=${selectedListId}`
-			)			
+			)
 			await mutate(`/api/lists/count`)
 		}
 		setActiveTab('')
 		setSelectedListId(listId)
-		const selected = userLists.find((list: {id: string}) => list.id === listId)
+		const selected = userLists.find(
+			(list: { id: string }) => list.id === listId
+		)
 		if (selected) {
 			setSelectedListName(selected.name)
 		}
 	}
 	function getCount() {
 		const filteredCommon = (commonData || []).filter(
-			(obj: {isWatched: boolean, isWishlist: boolean, isFavorite: boolean}) => obj.isWatched || obj.isWishlist || obj.isFavorite
+			(obj: {
+				isWatched: boolean
+				isWishlist: boolean
+				isFavorite: boolean
+			}) => obj.isWatched || obj.isWishlist || obj.isFavorite
 		)
 
 		return filteredCommon.length === 0
 			? ''
 			: `(${filteredCommon.length} ${
 					filteredCommon.length === 1 ? 'item' : 'items'
-			})`
+			  })`
 	}
-
 
 	const handleCopy = async () => {
 		if (!session?.user.id) return
-		const list = selectedListId || activeTab 
+		const list = selectedListId || activeTab
 		const shareUrl = `${window.location.origin}/sharelist?userId=${session.user.id}&listId=${list}`
 		await navigator.clipboard.writeText(shareUrl)
 		toast.success('Link copied!')
-
 	}
-	
 
-	if (
-		isLoading ||
-		isLoadingList ||
-		userListsMediaLoading ||
-		userListsLoading
-	)
+	const handleTabChange = (newTab: string) => {
+		setActiveTab(newTab)
+		// Явный сброс ID и имени при переходе на стандартную вкладку
+		if (newTab !== '') {
+			setSelectedListId('')
+			setSelectedListName('')
+		}
+	}
+
+	const virtuosoRef = useRef(null)
+	// Внутри MyLibrary
+	const [savedScroll, setSavedScroll] = useState(0)
+
+	// при монтировании страницы читаем scroll
+	useEffect(() => {
+		const saved = sessionStorage.getItem('moviesScrollY')
+		if (saved) {
+			setSavedScroll(Number(saved))
+		}
+		setTimeout(() => {
+			sessionStorage.setItem('moviesScrollY', '0')
+		}, 1500)
+	}, [])
+
+	// восстановление scroll после монтирования Virtuoso
+	useEffect(() => {
+		if (savedScroll > 0) {
+			setTimeout(() => {
+				window.scrollTo(0, savedScroll)
+			}, 50) // маленькая задержка, чтобы Virtuoso успел отрисовать элементы
+		}
+	}, [savedScroll])
+
+	if (isLoading || isLoadingList || userListsMediaLoading || userListsLoading)
 		return <LoadingPage />
 
 	return session?.user.id ? (
@@ -230,8 +340,8 @@ export default function MyLibrary({session}: {session: Session | null}) {
 
 			<LibraryTabsComponent
 				selectedListId={selectedListId}
-				activeTab={activeTab}
-				setActiveTab={setActiveTab}
+				activeTab={String(activeTab)}
+				setActiveTab={handleTabChange}
 				mediaType={mediaType}
 				setMediaType={setMediaType}
 				userLists={userLists}
@@ -308,21 +418,20 @@ export default function MyLibrary({session}: {session: Session | null}) {
 						{sortedData.length}{' '}
 						{sortedData.length > 1 ? 'items' : 'item'}
 					</p>
-					{/* <div className='mt-10 flex flex-col gap-5'>
-						{sortedData.map(
-							(item: CommonMedia) => (
-								<LibraryMediaItem
-									key={item.id}
-									item={item}
-									updateMovie={updateMovie}
-									handleListCreated={handleListCreated}
-								/>
-							)
-						)}
+					{/* <div className='mt-10'>
+						{sortedData.map((item, index) => (
+							<LibraryMediaItem
+								key={item.id ?? index}
+								item={item}
+								updateMovie={updateMovie}
+								handleListCreated={handleListCreated}
+							/>
+						))}
 					</div> */}
 					<div className='mt-10'>
 						<Virtuoso
-							useWindowScroll // 👈 позволяет использовать скролл всей страницы
+							ref={virtuosoRef}
+							useWindowScroll
 							data={sortedData}
 							itemContent={(index, item) => (
 								<LibraryMediaItem
@@ -332,6 +441,7 @@ export default function MyLibrary({session}: {session: Session | null}) {
 									handleListCreated={handleListCreated}
 								/>
 							)}
+							//rangeChanged={handleLinkClick} // обновляем и сохраняем индекс
 						/>
 					</div>
 				</>
@@ -365,6 +475,11 @@ const LibraryMediaItem = React.memo(function LibraryMediaItem({
 	updateMovie: (data: CommonMedia) => void
 	handleListCreated: () => Promise<void>
 }) {
+	// при уходе через Link
+	const handleLinkClick = () => {
+		sessionStorage.setItem('moviesScrollY', window.scrollY.toString())
+	}
+
 	return (
 		<div
 			key={item.id}
@@ -374,6 +489,7 @@ const LibraryMediaItem = React.memo(function LibraryMediaItem({
 				<Link
 					prefetch={true}
 					className='flex-shrink-0 hover:opacity-70 hidden sm:block'
+					onClick={handleLinkClick}
 					href={`/${item.type === 'tv' ? 'show' : 'movie'}/${
 						item.mediaId
 					}`}
@@ -392,6 +508,7 @@ const LibraryMediaItem = React.memo(function LibraryMediaItem({
 				<h2 className='text-xl font-semibold'>
 					<Link
 						prefetch={true}
+						onClick={handleLinkClick}
 						className='flex-shrink-0 text-2xl hover:opacity-70'
 						href={`/${item.type === 'tv' ? 'show' : 'movie'}/${
 							item.mediaId
@@ -408,6 +525,7 @@ const LibraryMediaItem = React.memo(function LibraryMediaItem({
 				{item.poster && (
 					<Link
 						prefetch={true}
+						onClick={handleLinkClick}
 						className='flex-shrink-0 hover:opacity-70 block sm:hidden'
 						href={`/${item.type === 'tv' ? 'show' : 'movie'}/${
 							item.mediaId

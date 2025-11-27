@@ -25,7 +25,6 @@ const MobileMenu = dynamic(() => import('../general/MobileMenu'), {
 	loading: () => <Skeleton className='w-[40px] h-[40px]' />,
 })
 
-
 export default function Header() {
 	const { data: session, status } = useSession() // status для отслеживания загрузки сессии
 	const [showMobileInputSearch, setShowMobileInputSearch] = useState(false)
@@ -35,9 +34,8 @@ export default function Header() {
 
 	const pathname = usePathname()
 
-
 	return (
-		<header className='w-full dark:bg-black bg-white border-b sticky top-0 z-50'>
+		<header className='w-full dark:bg-black bg-white border-b fixed top-0 z-50'>
 			<div className='mobile-header flex justify-between items-center gap-1 sm:gap-5 max-w-7xl py-3 sm:px-10 px-5 m-auto'>
 				<Link
 					prefetch={true}
@@ -64,7 +62,6 @@ export default function Header() {
 						setShowMobileInputSearch={setShowMobileInputSearch}
 					/>
 				</div>
-
 
 				<div className='flex gap-1 sm:gap-4 justify-center items-center'>
 					{status === 'loading' ? (
@@ -93,7 +90,7 @@ export default function Header() {
 							<ThemeToggle />
 
 							{session?.user ? (
-								<UserDropdownMenu 
+								<UserDropdownMenu
 									session={session}
 									setIsOpen={setIsOpen}
 								/>
