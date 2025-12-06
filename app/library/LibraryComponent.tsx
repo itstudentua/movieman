@@ -100,7 +100,7 @@ export default function MyLibrary({ session }: { session: Session | null }) {
 	// --- 3. useEffect: Запись всех состояний при их изменении (Остается прежним) ---
 	useEffect(() => {
 		if (typeof window !== 'undefined' && sessionStorage) {
-			sessionStorage.setItem('activeTab', String(activeTab))
+			sessionStorage.setItem('activeTab', activeTab || 'watched')
 			sessionStorage.setItem('mediaType', mediaType)
 			sessionStorage.setItem('sortOption', sortOption)
 			sessionStorage.setItem('sortOrder', sortOrder)
@@ -297,15 +297,25 @@ export default function MyLibrary({ session }: { session: Session | null }) {
 	// Внутри MyLibrary
 	const [savedScroll, setSavedScroll] = useState(0)
 
-	// при монтировании страницы читаем scroll
 	useEffect(() => {
 		const saved = sessionStorage.getItem('moviesScrollY')
 		if (saved) {
 			setSavedScroll(Number(saved))
 		}
-		setTimeout(() => {
-			sessionStorage.setItem('moviesScrollY', '0')
-		}, 1500)
+
+		function handleUpdate() {
+			const saved = sessionStorage.getItem('moviesScrollY')
+			if (saved) {
+				setSavedScroll(Number(saved))
+			}
+		}
+
+		window.addEventListener('sessionStorageUpdated', handleUpdate)
+
+		return () => {
+			window.removeEventListener('sessionStorageUpdated', handleUpdate)
+		}
+		
 	}, [])
 
 	// восстановление scroll после монтирования Virtuoso

@@ -42,6 +42,7 @@ export default function Header() {
 					onClick={() => {
 						setInputValue('')
 						setIsOpen(false)
+						sessionStorage.setItem('moviesScrollY', '0')
 					}}
 					href='/'
 				>

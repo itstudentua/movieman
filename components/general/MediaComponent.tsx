@@ -88,7 +88,7 @@ export default function MediaComponent({ mediaType }: { mediaType: string }) {
 					mediaType={mediaType}
 				/>
 			</div>
-			<h1 className='text-xl font-bold mb-4'>
+			<h1 className='text-xl font-bold mt-4 mb-4 text-center'>
 				{getPageTitle(categoryOfMedia, mediaType)}
 			</h1>
 

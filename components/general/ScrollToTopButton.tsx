@@ -16,7 +16,11 @@ export default function ScrollToTopButton() {
 	}, [])
 
 	const scrollToTop = () => {
-		window.scrollTo({ top: 0, behavior: 'smooth' })
+		sessionStorage.setItem('moviesScrollY', '0')
+		setTimeout(() => {
+			window.dispatchEvent(new Event('sessionStorageUpdated'))
+			window.scrollTo({ top: 0, behavior: 'smooth' })
+		}, 50);
 	}
 
 	if (!visible) return null
